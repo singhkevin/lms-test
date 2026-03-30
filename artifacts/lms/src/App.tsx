@@ -22,6 +22,7 @@ import AdminUsers from "@/pages/admin/Users";
 import AdminSiteSettings from "@/pages/admin/SiteSettings";
 import ComingSoon from "@/pages/admin/ComingSoon";
 import AdminWebinars from "@/pages/admin/Webinars";
+import AdminEnquiries from "@/pages/admin/Enquiries";
 
 // Student Pages
 import MyLearning from "@/pages/student/MyLearning";
@@ -67,6 +68,7 @@ function Router() {
         {() => <ComingSoon title="Enrollments" description="View and manage all student enrollments across courses." />}
       </Route>
       <Route path="/admin/webinars" component={AdminWebinars} />
+      <Route path="/admin/enquiries" component={AdminEnquiries} />
       <Route path="/admin/site-settings" component={AdminSiteSettings} />
       
       {/* Fallback */}

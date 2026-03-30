@@ -41,18 +41,19 @@ artifacts-monorepo/
 ## Database Schema (lib/db/src/schema/)
 
 - `users.ts` — users table + password_reset_tokens
-- `courses.ts` — courses, sections, lessons (with enums)
+- `courses.ts` — courses (+ `payment_link` nullable), sections, lessons, `course_enquiries`
 - `enrollments.ts` — enrollments + progress tracking
 - `orders.ts` — orders with payment gateway fields
 - `live-sessions.ts` — scheduled live/Zoom sessions
 - `community.ts` — community posts per course
 - `affiliates.ts` — affiliate tracking
+- `webinars.ts` — webinars + `webinar_rsvps` table
 
 ## API Routes (artifacts/api-server/src/routes/)
 
 - `auth.ts` — register, login, logout, /me, forgot/reset password
 - `users.ts` — CRUD + password change (RBAC: owner/instructor/student)
-- `courses.ts` — CRUD + sections + lessons (nested)
+- `courses.ts` — CRUD + sections + lessons (nested) + `POST /:courseId/enquiries` (student-only)
 - `enrollments.ts` — create, list, revoke
 - `progress.ts` — mark lesson complete, get progress
 - `orders.ts` — CRUD + mark-paid (auto-enrolls)
@@ -60,20 +61,28 @@ artifacts-monorepo/
 - `community.ts` — posts CRUD
 - `analytics.ts` — owner/instructor summary dashboard
 - `affiliates.ts` — affiliate code management
+- `webinars.ts` — webinar CRUD, RSVP (student POST/DELETE), admin RSVP list
+- `enquiries.ts` — list all course enquiries (admin only, GET /api/enquiries)
+- `site-settings.ts` — site title, logo URL
 
 ## Frontend Pages (artifacts/lms/src/pages/)
 
 - `public/Landing.tsx` — marketing homepage
 - `public/CourseCatalog.tsx` — public course browser
-- `public/CourseLanding.tsx` — per-course marketing page
+- `public/CourseLanding.tsx` — per-course marketing page with smart CTA (enrolled→Go to Course, paid+Razorpay link→open link, else→enquiry form)
 - `auth/Login.tsx` — email/password + Google OAuth button
 - `auth/Register.tsx` — registration
 - `admin/Dashboard.tsx` — analytics overview
 - `admin/Courses.tsx` — course management
-- `admin/CourseDetail.tsx` — content studio (sections/lessons)
+- `admin/CourseDetail.tsx` — content studio (sections/lessons) + Razorpay payment link field
 - `admin/Users.tsx` — user management with enrollment/order view
+- `admin/Webinars.tsx` — webinar management + RSVP count badges
+- `admin/Enquiries.tsx` — course enquiry list (paginated)
+- `admin/SiteSettings.tsx` — site title and logo URL
 - `student/MyLearning.tsx` — enrolled courses
 - `student/CoursePlayer.tsx` — lesson player with progress
+- `student/Webinars.tsx` — webinar listing + RSVP toggle
+- `student/WebinarDetail.tsx` — webinar detail + RSVP
 
 ## Auth Flow
 

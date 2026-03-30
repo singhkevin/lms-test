@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, coursesTable, sectionsTable, lessonsTable, usersTable, enrollmentsTable } from "@workspace/db";
+import { db, coursesTable, sectionsTable, lessonsTable, usersTable, enrollmentsTable, courseEnquiriesTable } from "@workspace/db";
 import { eq, and, ilike, sql, desc, inArray } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthenticatedRequest } from "../lib/auth.js";
 import { uniqueSlug } from "../lib/slugify.js";
@@ -11,7 +11,7 @@ const courseShape = {
   id: coursesTable.id, title: coursesTable.title, slug: coursesTable.slug,
   description: coursesTable.description, longDescription: coursesTable.longDescription,
   courseType: coursesTable.courseType, thumbnailUrl: coursesTable.thumbnailUrl,
-  price: coursesTable.price, status: coursesTable.status,
+  price: coursesTable.price, paymentLink: coursesTable.paymentLink, status: coursesTable.status,
   instructorId: coursesTable.instructorId, instructorName: usersTable.name,
   createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
 };
@@ -20,13 +20,13 @@ interface CourseRow {
   id: string; title: string; slug: string;
   description: string | null; longDescription: string | null;
   courseType: "recorded" | "live"; thumbnailUrl: string | null;
-  price: string | null; status: "draft" | "published" | "archived";
+  price: string | null; paymentLink: string | null; status: "draft" | "published" | "archived";
   instructorId: string | null; instructorName: string | null;
   createdAt: Date; updatedAt: Date;
 }
 
 function formatCourse(c: CourseRow, enrollmentCount = 0, moduleCount = 0) {
-  return { ...c, price: c.price ? Number(c.price) : null, enrollmentCount, moduleCount };
+  return { ...c, price: c.price ? Number(c.price) : null, paymentLink: c.paymentLink ?? null, enrollmentCount, moduleCount };
 }
 
 router.get("/catalog", async (_req, res) => {
@@ -95,13 +95,15 @@ router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: Au
       courseType: z.enum(["recorded", "live"]).optional().default("recorded"),
       thumbnailUrl: z.string().optional(),
       price: z.number().optional(),
+      paymentLink: z.string().url().optional().or(z.literal("")),
     }).parse(req.body);
     const slug = uniqueSlug(data.title);
 
     const [course] = await db.insert(coursesTable).values({
       title: data.title, description: data.description, longDescription: data.longDescription,
       courseType: data.courseType, thumbnailUrl: data.thumbnailUrl,
-      slug, price: data.price?.toString(), instructorId: req.user!.userId,
+      slug, price: data.price?.toString(), paymentLink: data.paymentLink || null,
+      instructorId: req.user!.userId,
     }).returning();
 
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
@@ -152,11 +154,13 @@ router.patch("/:courseId", requireAuth, requireRole("owner", "instructor"), asyn
       courseType: z.enum(["recorded", "live"]).optional(),
       thumbnailUrl: z.string().optional(),
       price: z.number().optional(),
+      paymentLink: z.string().url().optional().or(z.literal("")).nullable(),
       status: z.enum(["draft", "published", "archived"]).optional(),
     }).parse(req.body);
 
     const updateData: Record<string, unknown> = { ...data, updatedAt: new Date() };
     if (data.price !== undefined) updateData["price"] = data.price.toString();
+    if ("paymentLink" in data) updateData["paymentLink"] = data.paymentLink || null;
 
     const [updated] = await db.update(coursesTable).set(updateData).where(eq(coursesTable.id, req.params["courseId"]!)).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
@@ -264,6 +268,36 @@ router.delete("/:courseId/sections/:sectionId", requireAuth, requireRole("owner"
     res.json({ message: "Section deleted" });
   } catch (err) {
     req.log.error({ err }, "Delete section error");
+    res.status(500).json({ error: "InternalError" });
+  }
+});
+
+// COURSE ENQUIRIES (student self-submit)
+router.post("/:courseId/enquiries", requireAuth, async (req: AuthenticatedRequest, res) => {
+  try {
+    if (req.user!.role !== "student") {
+      res.status(403).json({ error: "Forbidden", message: "Only students can submit enquiries" });
+      return;
+    }
+    const data = z.object({
+      firstName: z.string().min(1),
+      lastName: z.string().min(1),
+      email: z.string().email(),
+      phone: z.string().min(5),
+      age: z.number().int().min(10).max(100),
+      upscAttempts: z.number().int().min(0).max(20),
+    }).parse(req.body);
+
+    const [enquiry] = await db.insert(courseEnquiriesTable).values({
+      courseId: req.params["courseId"]!,
+      userId: req.user!.userId,
+      ...data,
+    }).returning();
+
+    res.status(201).json(enquiry);
+  } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
+    req.log.error({ err }, "Create enquiry error");
     res.status(500).json({ error: "InternalError" });
   }
 });

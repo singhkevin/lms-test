@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Plus, Video, FileText, Radio, Pencil, Trash2, Globe, Archive, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Plus, Video, FileText, Radio, Pencil, Trash2, Globe, Archive, Link as LinkIcon, CreditCard, Save } from "lucide-react";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -89,6 +89,32 @@ export default function CourseDetail() {
   const deleteLesson = useDeleteLesson();
   const publishCourse = usePublishCourse();
   const unpublishCourse = useUnpublishCourse();
+
+  const [paymentLink, setPaymentLink] = useState<string>("");
+  const [savingPaymentLink, setSavingPaymentLink] = useState(false);
+
+  useEffect(() => {
+    if (course) setPaymentLink((course as any).paymentLink ?? "");
+  }, [course?.id]);
+
+  const handleSavePaymentLink = async () => {
+    setSavingPaymentLink(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_URL ?? "/api"}/courses/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ paymentLink: paymentLink.trim() || null }),
+      });
+      if (!res.ok) throw new Error("Failed");
+      toast.success("Payment link saved");
+      invalidateCourse();
+    } catch {
+      toast.error("Failed to save payment link");
+    } finally {
+      setSavingPaymentLink(false);
+    }
+  };
 
   const [sectionModal, setSectionModal] = useState(false);
   const [sectionTitle, setSectionTitle] = useState("");
@@ -313,6 +339,39 @@ export default function CourseDetail() {
               </Button>
             )}
           </div>
+        </div>
+
+        {/* Payment Link */}
+        <div className="bg-card p-6 rounded-2xl border border-border/50 shadow-sm">
+          <div className="flex items-center gap-2 mb-1">
+            <CreditCard className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-semibold">Razorpay Payment Link</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Paste a Razorpay payment link. Students seeing this paid course will be directed here to pay. Leave empty for free or enquiry-only courses.
+          </p>
+          <div className="flex gap-3">
+            <Input
+              value={paymentLink}
+              onChange={e => setPaymentLink(e.target.value)}
+              placeholder="https://rzp.io/l/..."
+              className="rounded-xl flex-1"
+            />
+            <Button
+              onClick={handleSavePaymentLink}
+              disabled={savingPaymentLink}
+              size="sm"
+              className="rounded-xl shrink-0"
+            >
+              <Save className="h-4 w-4 mr-1.5" />
+              {savingPaymentLink ? "Saving..." : "Save"}
+            </Button>
+          </div>
+          {paymentLink && (
+            <p className="text-xs text-emerald-600 mt-2 flex items-center gap-1">
+              <LinkIcon className="h-3 w-3" /> Payment link active — students will be directed to Razorpay.
+            </p>
+          )}
         </div>
 
         {/* Curriculum */}

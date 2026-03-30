@@ -16,6 +16,7 @@ export const coursesTable = pgTable("courses", {
   courseType: courseTypeEnum("course_type").notNull().default("recorded"),
   thumbnailUrl: text("thumbnail_url"),
   price: numeric("price", { precision: 10, scale: 2 }),
+  paymentLink: text("payment_link"),
   status: courseStatusEnum("status").notNull().default("draft"),
   instructorId: text("instructor_id").notNull().references(() => usersTable.id, { onDelete: "restrict" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -46,11 +47,26 @@ export const lessonsTable = pgTable("lessons", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const courseEnquiriesTable = pgTable("course_enquiries", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  courseId: text("course_id").notNull().references(() => coursesTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").references(() => usersTable.id, { onDelete: "set null" }),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  age: integer("age").notNull(),
+  upscAttempts: integer("upsc_attempts").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const insertCourseSchema = createInsertSchema(coursesTable).omit({ id: true, createdAt: true, updatedAt: true });
 export const insertSectionSchema = createInsertSchema(sectionsTable).omit({ id: true, createdAt: true });
 export const insertLessonSchema = createInsertSchema(lessonsTable).omit({ id: true, createdAt: true });
+export const insertCourseEnquirySchema = createInsertSchema(courseEnquiriesTable).omit({ id: true, createdAt: true });
 
 export type InsertCourse = z.infer<typeof insertCourseSchema>;
 export type Course = typeof coursesTable.$inferSelect;
 export type Section = typeof sectionsTable.$inferSelect;
 export type Lesson = typeof lessonsTable.$inferSelect;
+export type CourseEnquiry = typeof courseEnquiriesTable.$inferSelect;

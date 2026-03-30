@@ -9,6 +9,7 @@ import {
   Settings,
   Menu,
   BookOpen as Logo,
+  MessageSquare,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -26,6 +27,7 @@ const navigation = [
   { name: "Users",         href: "/admin/users",          icon: Users },
   { name: "Enrollments",   href: "/admin/enrollments",    icon: GraduationCap },
   { name: "Webinars",      href: "/admin/webinars",       icon: Video },
+  { name: "Enquiries",     href: "/admin/enquiries",      icon: MessageSquare },
   { name: "Site Settings", href: "/admin/site-settings",  icon: Settings },
 ];
 

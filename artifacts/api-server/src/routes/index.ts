@@ -12,6 +12,7 @@ import analyticsRouter from "./analytics.js";
 import affiliatesRouter from "./affiliates.js";
 import siteSettingsRouter from "./site-settings.js";
 import webinarsRouter from "./webinars.js";
+import enquiriesRouter from "./enquiries.js";
 
 const router: IRouter = Router();
 
@@ -28,5 +29,6 @@ router.use("/analytics", analyticsRouter);
 router.use("/affiliates", affiliatesRouter);
 router.use("/site-settings", siteSettingsRouter);
 router.use("/webinars", webinarsRouter);
+router.use("/enquiries", enquiriesRouter);
 
 export default router;
