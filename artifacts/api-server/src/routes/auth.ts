@@ -212,7 +212,7 @@ router.post("/setup", async (req, res) => {
     }
     const hashed = await hashPassword(data.password);
     const [user] = await db.insert(usersTable).values({ name: data.name, email: data.email, passwordHash: hashed, role: "owner" }).returning();
-    const token = signToken(user.id, user.role);
+    const token = signToken({ userId: user.id, role: user.role, email: user.email });
     res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
   } catch (err) {
     if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
