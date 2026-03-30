@@ -5,10 +5,13 @@
  * LMS Academy API
  * OpenAPI spec version: 0.1.0
  */
+import type { CourseType } from "./courseType";
 
 export interface CreateCourseRequest {
   title: string;
   description?: string;
+  longDescription?: string;
+  courseType?: CourseType;
   thumbnailUrl?: string;
   price?: number;
 }

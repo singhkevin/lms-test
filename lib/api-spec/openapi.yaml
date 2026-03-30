@@ -1349,6 +1349,10 @@ components:
       type: string
       enum: [owner, instructor, student]
 
+    CourseType:
+      type: string
+      enum: [recorded, live]
+
     CourseStatus:
       type: string
       enum: [draft, published, archived]
@@ -1529,6 +1533,11 @@ components:
         description:
           type: string
           nullable: true
+        longDescription:
+          type: string
+          nullable: true
+        courseType:
+          $ref: "#/components/schemas/CourseType"
         thumbnailUrl:
           type: string
           nullable: true
@@ -1547,13 +1556,15 @@ components:
           nullable: true
         enrollmentCount:
           type: integer
+        moduleCount:
+          type: integer
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
-      required: [id, title, slug, status, instructorId, enrollmentCount, createdAt, updatedAt]
+      required: [id, title, slug, courseType, status, instructorId, enrollmentCount, createdAt, updatedAt]
 
     CourseDetail:
       type: object
@@ -1567,6 +1578,11 @@ components:
         description:
           type: string
           nullable: true
+        longDescription:
+          type: string
+          nullable: true
+        courseType:
+          $ref: "#/components/schemas/CourseType"
         thumbnailUrl:
           type: string
           nullable: true
@@ -1585,6 +1601,8 @@ components:
           nullable: true
         enrollmentCount:
           type: integer
+        moduleCount:
+          type: integer
         sections:
           type: array
           items:
@@ -1595,7 +1613,7 @@ components:
         updatedAt:
           type: string
           format: date-time
-      required: [id, title, slug, status, instructorId, enrollmentCount, sections, createdAt, updatedAt]
+      required: [id, title, slug, courseType, status, instructorId, enrollmentCount, sections, createdAt, updatedAt]
 
     CourseListResponse:
       type: object
@@ -1619,6 +1637,10 @@ components:
           type: string
         description:
           type: string
+        longDescription:
+          type: string
+        courseType:
+          $ref: "#/components/schemas/CourseType"
         thumbnailUrl:
           type: string
         price:
@@ -1632,6 +1654,10 @@ components:
           type: string
         description:
           type: string
+        longDescription:
+          type: string
+        courseType:
+          $ref: "#/components/schemas/CourseType"
         thumbnailUrl:
           type: string
         price:
@@ -1714,6 +1740,12 @@ components:
         videoUrl:
           type: string
           nullable: true
+        pdfUrl:
+          type: string
+          nullable: true
+        zoomMeetingUrl:
+          type: string
+          nullable: true
         durationMinutes:
           type: integer
           nullable: true
@@ -1737,6 +1769,10 @@ components:
           type: string
         videoUrl:
           type: string
+        pdfUrl:
+          type: string
+        zoomMeetingUrl:
+          type: string
         durationMinutes:
           type: integer
         order:
@@ -1755,6 +1791,10 @@ components:
         content:
           type: string
         videoUrl:
+          type: string
+        pdfUrl:
+          type: string
+        zoomMeetingUrl:
           type: string
         durationMinutes:
           type: integer

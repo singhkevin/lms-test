@@ -12,6 +12,8 @@ export interface UpdateLessonRequest {
   type?: LessonType;
   content?: string;
   videoUrl?: string;
+  pdfUrl?: string;
+  zoomMeetingUrl?: string;
   durationMinutes?: number;
   order?: number;
   isFree?: boolean;

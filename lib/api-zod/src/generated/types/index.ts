@@ -16,6 +16,7 @@ export * from "./course";
 export * from "./courseDetail";
 export * from "./courseListResponse";
 export * from "./courseStatus";
+export * from "./courseType";
 export * from "./createAffiliateRequest";
 export * from "./createCommunityPostRequest";
 export * from "./createCourseRequest";

@@ -14,6 +14,8 @@ export interface Lesson {
   type: LessonType;
   content?: string | null;
   videoUrl?: string | null;
+  pdfUrl?: string | null;
+  zoomMeetingUrl?: string | null;
   durationMinutes?: number | null;
   order: number;
   isFree: boolean;

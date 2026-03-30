@@ -6,12 +6,15 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CourseStatus } from "./courseStatus";
+import type { CourseType } from "./courseType";
 
 export interface Course {
   id: string;
   title: string;
   slug: string;
   description?: string | null;
+  longDescription?: string | null;
+  courseType: CourseType;
   thumbnailUrl?: string | null;
   price?: number | null;
   paymentLink?: string | null;
@@ -19,6 +22,7 @@ export interface Course {
   instructorId: string;
   instructorName?: string | null;
   enrollmentCount: number;
+  moduleCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
