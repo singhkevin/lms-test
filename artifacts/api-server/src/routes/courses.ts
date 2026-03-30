@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, coursesTable, sectionsTable, lessonsTable, usersTable, enrollmentsTable, courseEnquiriesTable } from "@workspace/db";
-import { eq, and, ilike, sql, desc, inArray } from "drizzle-orm";
+import { eq, and, ilike, sql, desc, inArray, or } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthenticatedRequest } from "../lib/auth.js";
 import { uniqueSlug } from "../lib/slugify.js";
 import { z } from "zod";
@@ -27,6 +27,12 @@ interface CourseRow {
 
 function formatCourse(c: CourseRow, enrollmentCount = 0, moduleCount = 0) {
   return { ...c, price: c.price ? Number(c.price) : null, paymentLink: c.paymentLink ?? null, enrollmentCount, moduleCount };
+}
+
+async function resolveCourseId(idOrSlug: string): Promise<string | null> {
+  const [row] = await db.select({ id: coursesTable.id }).from(coursesTable)
+    .where(or(eq(coursesTable.id, idOrSlug), eq(coursesTable.slug, idOrSlug))).limit(1);
+  return row?.id ?? null;
 }
 
 router.get("/catalog", async (_req, res) => {
@@ -118,9 +124,10 @@ router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: Au
 
 router.get("/:courseId", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
+    const idOrSlug = req.params["courseId"]!;
     const [course] = await db.select(courseShape).from(coursesTable)
       .leftJoin(usersTable, eq(coursesTable.instructorId, usersTable.id))
-      .where(eq(coursesTable.id, req.params["courseId"]!)).limit(1);
+      .where(or(eq(coursesTable.id, idOrSlug), eq(coursesTable.slug, idOrSlug))).limit(1);
 
     if (!course) { res.status(404).json({ error: "NotFound" }); return; }
 
@@ -217,7 +224,9 @@ router.post("/:courseId/unpublish", requireAuth, requireRole("owner", "instructo
 // SECTIONS
 router.get("/:courseId/sections", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const sections = await db.select().from(sectionsTable).where(eq(sectionsTable.courseId, req.params["courseId"]!)).orderBy(sectionsTable.order);
+    const courseId = await resolveCourseId(req.params["courseId"]!);
+    if (!courseId) { res.status(404).json({ error: "NotFound" }); return; }
+    const sections = await db.select().from(sectionsTable).where(eq(sectionsTable.courseId, courseId)).orderBy(sectionsTable.order);
     const sectionIds = sections.map(s => s.id);
     const lessons = sectionIds.length > 0
       ? await db.select().from(lessonsTable).where(inArray(lessonsTable.sectionId, sectionIds)).orderBy(lessonsTable.order)
