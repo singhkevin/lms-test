@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -20,22 +20,25 @@ import {
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isPast } from "date-fns";
-import { Plus, MoreVertical, Video, Clock, CalendarDays, ExternalLink, Pencil, Trash2, Link as LinkIcon } from "lucide-react";
+import { Plus, MoreVertical, Video, Clock, CalendarDays, ExternalLink, Pencil, Trash2, Link as LinkIcon, Users, Image } from "lucide-react";
 
 interface Webinar {
   id: string;
   title: string;
   description: string | null;
+  imageUrl: string | null;
   zoomUrl: string;
   scheduledAt: string;
   durationMinutes: number;
   status: string;
   createdAt: string;
+  rsvpCount: number;
 }
 
 interface WebinarForm {
   title: string;
   description: string;
+  imageUrl: string;
   zoomUrl: string;
   scheduledAt: string;
   durationMinutes: string;
@@ -45,6 +48,7 @@ interface WebinarForm {
 const defaultForm: WebinarForm = {
   title: "",
   description: "",
+  imageUrl: "",
   zoomUrl: "",
   scheduledAt: "",
   durationMinutes: "60",
@@ -107,6 +111,7 @@ export default function AdminWebinars() {
     setForm({
       title: w.title,
       description: w.description ?? "",
+      imageUrl: w.imageUrl ?? "",
       zoomUrl: w.zoomUrl,
       scheduledAt: w.scheduledAt.slice(0, 16),
       durationMinutes: String(w.durationMinutes),
@@ -126,6 +131,7 @@ export default function AdminWebinars() {
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() || undefined,
+        imageUrl: form.imageUrl.trim() || undefined,
         zoomUrl: form.zoomUrl.trim(),
         scheduledAt: new Date(form.scheduledAt).toISOString(),
         durationMinutes: parseInt(form.durationMinutes) || 60,
@@ -224,8 +230,20 @@ export default function AdminWebinars() {
             <div className="divide-y divide-border/40">
               {webinars.map(webinar => (
                 <div key={webinar.id} className="flex items-start gap-4 px-5 py-4 hover:bg-muted/20 transition-colors">
-                  <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Video className="h-5 w-5 text-primary" />
+                  {/* Thumbnail or icon */}
+                  <div className="flex-shrink-0 mt-0.5">
+                    {webinar.imageUrl ? (
+                      <img
+                        src={webinar.imageUrl}
+                        alt={webinar.title}
+                        className="h-14 w-20 rounded-xl object-cover border border-border/40"
+                        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                    ) : (
+                      <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                        <Video className="h-5 w-5 text-primary" />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex-1 min-w-0">
@@ -234,6 +252,12 @@ export default function AdminWebinars() {
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${statusBadge(webinar.status, webinar.scheduledAt)}`}>
                         {statusLabel(webinar.status, webinar.scheduledAt)}
                       </span>
+                      {webinar.rsvpCount > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-violet-500/10 text-violet-600 border border-violet-500/20">
+                          <Users className="h-3 w-3" />
+                          {webinar.rsvpCount} signed up
+                        </span>
+                      )}
                     </div>
                     {webinar.description && (
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{webinar.description}</p>
@@ -293,7 +317,7 @@ export default function AdminWebinars() {
 
       {/* Create / Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-[480px] rounded-2xl">
+        <DialogContent className="sm:max-w-[520px] rounded-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editTarget ? "Edit Webinar" : "Schedule New Webinar"}</DialogTitle>
           </DialogHeader>
@@ -320,6 +344,29 @@ export default function AdminWebinars() {
             </div>
 
             <div className="space-y-2">
+              <Label className="flex items-center gap-1.5">
+                <Image className="h-4 w-4" /> Cover Image URL
+              </Label>
+              <Input
+                value={form.imageUrl}
+                onChange={e => setForm(f => ({ ...f, imageUrl: e.target.value }))}
+                placeholder="https://example.com/image.jpg"
+                type="url"
+                className="rounded-xl"
+              />
+              {form.imageUrl && (
+                <div className="mt-2 rounded-xl overflow-hidden border border-border/50 aspect-video bg-muted">
+                  <img
+                    src={form.imageUrl}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                    onError={e => { (e.target as HTMLImageElement).style.opacity = "0.3"; }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
               <Label>Zoom Meeting Link <span className="text-destructive">*</span></Label>
               <Input
                 value={form.zoomUrl}
@@ -329,7 +376,7 @@ export default function AdminWebinars() {
                 required
                 className="rounded-xl"
               />
-              <p className="text-xs text-muted-foreground">Paste your Zoom invite link here. Shown to students.</p>
+              <p className="text-xs text-muted-foreground">Paste your Zoom invite link here. Shown to RSVP'd students.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -391,7 +438,7 @@ export default function AdminWebinars() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete "{deleteTarget?.title}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the webinar. This action cannot be undone.
+              This will permanently delete the webinar and all RSVPs. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

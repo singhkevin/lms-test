@@ -40,9 +40,14 @@ export function Navbar() {
                 Courses
               </Link>
               {user?.role === 'student' && (
-                <Link href="/my-learning" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                  My Learning
-                </Link>
+                <>
+                  <Link href="/webinars" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    Webinars
+                  </Link>
+                  <Link href="/my-learning" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                    My Learning
+                  </Link>
+                </>
               )}
             </nav>
           )}

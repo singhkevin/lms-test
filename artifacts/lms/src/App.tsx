@@ -26,6 +26,8 @@ import AdminWebinars from "@/pages/admin/Webinars";
 // Student Pages
 import MyLearning from "@/pages/student/MyLearning";
 import CoursePlayer from "@/pages/student/CoursePlayer";
+import StudentWebinars from "@/pages/student/Webinars";
+import WebinarDetail from "@/pages/student/WebinarDetail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +52,8 @@ function Router() {
       <Route path="/register" component={Register} />
       
       {/* Student */}
+      <Route path="/webinars" component={StudentWebinars} />
+      <Route path="/webinars/:id" component={WebinarDetail} />
       <Route path="/my-learning" component={MyLearning} />
       <Route path="/my-learning/:courseId" component={CoursePlayer} />
       
