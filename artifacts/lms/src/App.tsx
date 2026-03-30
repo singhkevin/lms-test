@@ -21,6 +21,7 @@ import AdminCourseDetail from "@/pages/admin/CourseDetail";
 import AdminUsers from "@/pages/admin/Users";
 import AdminSiteSettings from "@/pages/admin/SiteSettings";
 import ComingSoon from "@/pages/admin/ComingSoon";
+import AdminWebinars from "@/pages/admin/Webinars";
 
 // Student Pages
 import MyLearning from "@/pages/student/MyLearning";
@@ -61,15 +62,7 @@ function Router() {
       <Route path="/admin/enrollments">
         {() => <ComingSoon title="Enrollments" description="View and manage all student enrollments across courses." />}
       </Route>
-      <Route path="/admin/live-sessions">
-        {() => <ComingSoon title="Live Sessions" description="Schedule and manage upcoming Zoom live sessions." />}
-      </Route>
-      <Route path="/admin/community">
-        {() => <ComingSoon title="Community" description="Moderate community posts, discussions, and announcements." />}
-      </Route>
-      <Route path="/admin/affiliates">
-        {() => <ComingSoon title="Affiliates" description="Manage affiliate partners, referrals, and commission tracking." />}
-      </Route>
+      <Route path="/admin/webinars" component={AdminWebinars} />
       <Route path="/admin/site-settings" component={AdminSiteSettings} />
       
       {/* Fallback */}

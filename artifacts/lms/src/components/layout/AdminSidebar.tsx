@@ -5,12 +5,9 @@ import {
   BookOpen, 
   Users, 
   GraduationCap, 
-  Video, 
-  MessageSquare, 
-  Link as LinkIcon,
+  Video,
   Settings,
   Menu,
-  X,
   BookOpen as Logo,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
@@ -28,9 +25,7 @@ const navigation = [
   { name: "Courses",       href: "/admin/courses",        icon: BookOpen },
   { name: "Users",         href: "/admin/users",          icon: Users },
   { name: "Enrollments",   href: "/admin/enrollments",    icon: GraduationCap },
-  { name: "Live Sessions", href: "/admin/live-sessions",  icon: Video },
-  { name: "Community",     href: "/admin/community",      icon: MessageSquare },
-  { name: "Affiliates",    href: "/admin/affiliates",     icon: LinkIcon },
+  { name: "Webinars",      href: "/admin/webinars",       icon: Video },
   { name: "Site Settings", href: "/admin/site-settings",  icon: Settings },
 ];
 

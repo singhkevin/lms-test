@@ -11,6 +11,7 @@ import communityRouter from "./community.js";
 import analyticsRouter from "./analytics.js";
 import affiliatesRouter from "./affiliates.js";
 import siteSettingsRouter from "./site-settings.js";
+import webinarsRouter from "./webinars.js";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use("/community", communityRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/affiliates", affiliatesRouter);
 router.use("/site-settings", siteSettingsRouter);
+router.use("/webinars", webinarsRouter);
 
 export default router;
