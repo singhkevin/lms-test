@@ -51,7 +51,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {!isAuthenticated ? (
             <>
-              <Link href="/login">
+              <Link href="/">
                 <Button variant="ghost" className="text-sm font-medium">
                   Sign In
                 </Button>

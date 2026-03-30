@@ -99,7 +99,7 @@ export default function StaffLogin() {
 
           <p className="text-center text-xs text-muted-foreground mt-8 pt-4 border-t border-border/40">
             Looking for the student portal?{" "}
-            <Link href="/login" className="text-primary font-medium hover:underline">
+            <Link href="/" className="text-primary font-medium hover:underline">
               Student Login →
             </Link>
           </p>
