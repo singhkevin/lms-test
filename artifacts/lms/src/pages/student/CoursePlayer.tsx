@@ -1,12 +1,26 @@
 import { useParams, Link } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { useGetCourse, useListSections, useGetMyProgress, useMarkLessonComplete } from "@workspace/api-client-react";
-import { ArrowLeft, CheckCircle2, Circle, PlayCircle, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Circle, PlayCircle, FileText, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetMyProgressQueryKey } from "@workspace/api-client-react";
+
+function getVideoEmbedUrl(url: string): string {
+  // Convert Loom share URL → embed URL
+  // https://www.loom.com/share/VIDEO_ID?... → https://www.loom.com/embed/VIDEO_ID
+  const loomShare = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+  if (loomShare) {
+    return `https://www.loom.com/embed/${loomShare[1]}`;
+  }
+  return url;
+}
+
+function isLoomUrl(url: string): boolean {
+  return /loom\.com/.test(url);
+}
 
 export default function CoursePlayer() {
   const { courseId } = useParams<{ courseId: string }>();
@@ -76,25 +90,44 @@ export default function CoursePlayer() {
         <main className="flex-1 overflow-y-auto bg-black flex flex-col relative">
           {currentLesson ? (
             <>
-              <div className="flex-1 w-full flex items-center justify-center bg-black min-h-[50vh]">
+              <div className="flex-1 w-full bg-black flex flex-col">
                 {currentLesson.type === 'video' ? (
                   currentLesson.videoUrl ? (
-                    <iframe 
-                      src={currentLesson.videoUrl} 
-                      className="w-full h-full border-0" 
-                      allowFullScreen 
-                      title={currentLesson.title}
-                    />
+                    <div className="relative w-full flex-1 flex flex-col">
+                      <iframe
+                        key={currentLesson.id}
+                        src={getVideoEmbedUrl(currentLesson.videoUrl)}
+                        className="absolute inset-0 w-full h-full border-0"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        title={currentLesson.title}
+                      />
+                      {isLoomUrl(currentLesson.videoUrl) && (
+                        <div className="absolute bottom-3 right-3 z-10">
+                          <a
+                            href={currentLesson.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-black/60 text-white/80 text-xs font-medium hover:bg-black/80 transition-colors backdrop-blur-sm"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Open in Loom
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <div className="text-white/50 flex flex-col items-center">
+                    <div className="flex-1 flex items-center justify-center text-white/50 flex-col">
                       <PlayCircle className="h-16 w-16 mb-4 opacity-50" />
-                      <p>Video processing...</p>
+                      <p>No video URL set for this lesson.</p>
                     </div>
                   )
                 ) : (
-                  <div className="p-12 w-full max-w-4xl mx-auto prose prose-invert">
-                    <h1 className="text-white">{currentLesson.title}</h1>
-                    <div className="text-white/80" dangerouslySetInnerHTML={{ __html: currentLesson.content || 'No content provided.' }} />
+                  <div className="flex-1 overflow-y-auto">
+                    <div className="p-10 w-full max-w-4xl mx-auto prose prose-invert">
+                      <h1 className="text-white">{currentLesson.title}</h1>
+                      <div className="text-white/80" dangerouslySetInnerHTML={{ __html: currentLesson.content || 'No content provided.' }} />
+                    </div>
                   </div>
                 )}
               </div>

@@ -543,7 +543,9 @@ export default function CourseDetail() {
                 {lessonForm.videoUrl && !validateLoomUrl(lessonForm.videoUrl) && (
                   <p className="text-xs text-destructive">Must be a valid loom.com URL</p>
                 )}
-                <p className="text-xs text-muted-foreground">Only Loom links are accepted.</p>
+                <p className="text-xs text-muted-foreground">
+                  Paste your Loom share link (e.g. <span className="font-mono">loom.com/share/…</span>). It will be automatically converted to an embeddable player for students.
+                </p>
               </div>
             )}
 
