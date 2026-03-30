@@ -61,9 +61,6 @@ function Router() {
       <Route path="/admin/enrollments">
         {() => <ComingSoon title="Enrollments" description="View and manage all student enrollments across courses." />}
       </Route>
-      <Route path="/admin/orders">
-        {() => <ComingSoon title="Orders" description="Track purchases, payments, and revenue from course orders." />}
-      </Route>
       <Route path="/admin/live-sessions">
         {() => <ComingSoon title="Live Sessions" description="Schedule and manage upcoming Zoom live sessions." />}
       </Route>

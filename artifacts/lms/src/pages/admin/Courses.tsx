@@ -230,106 +230,75 @@ export default function AdminCourses() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/30 text-muted-foreground uppercase text-xs font-semibold">
-                <tr>
-                  <th className="px-6 py-4">Course</th>
-                  <th className="px-6 py-4">Type</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Modules</th>
-                  <th className="px-6 py-4">Enrollments</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">Loading courses...</td>
-                  </tr>
-                ) : coursesData?.data?.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center text-muted-foreground">
-                        <BookOpen className="h-12 w-12 mb-4 opacity-20" />
-                        <p>No courses yet. Create your first one!</p>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  coursesData?.data?.map((course) => (
-                    <tr key={course.id} className="hover:bg-muted/20 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {course.thumbnailUrl ? (
-                              <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                              <BookOpen className="h-5 w-5 text-primary" />
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-foreground group-hover:text-primary transition-colors">{course.title}</div>
-                            <div className="text-xs text-muted-foreground">{course.slug}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${typeBadge(course.courseType)}`}>
-                          {typeIcon(course.courseType)}
-                          <span className="capitalize">{course.courseType}</span>
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                          course.status === "published" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
-                          course.status === "archived" ? "bg-muted text-muted-foreground border-border" :
-                          "bg-amber-500/10 text-amber-600 border-amber-500/20"
-                        }`}>
-                          {course.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {course.moduleCount} module{course.moduleCount !== 1 ? "s" : ""}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {course.enrollmentCount}
-                      </td>
-                      <td className="px-6 py-4 font-medium text-foreground">
-                        {course.price ? `₹${course.price.toLocaleString()}` : "Free"}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                            <Link href={`/admin/courses/${course.id}`}>
-                              <DropdownMenuItem className="cursor-pointer">
-                                <Edit className="mr-2 h-4 w-4" /> Edit Content
-                              </DropdownMenuItem>
-                            </Link>
-                            {course.status !== "published" ? (
-                              <DropdownMenuItem onClick={() => handlePublish(course.id)} className="cursor-pointer text-emerald-600 focus:text-emerald-600">
-                                <Globe className="mr-2 h-4 w-4" /> Publish
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem onClick={() => handleUnpublish(course.id)} className="cursor-pointer text-amber-600 focus:text-amber-600">
-                                <Archive className="mr-2 h-4 w-4" /> Unpublish
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          {isLoading ? (
+            <div className="p-6 space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-20 bg-muted rounded-xl animate-pulse" />)}
+            </div>
+          ) : coursesData?.data?.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <div className="flex flex-col items-center justify-center text-muted-foreground">
+                <BookOpen className="h-12 w-12 mb-4 opacity-20" />
+                <p>No courses yet. Create your first one!</p>
+              </div>
+            </div>
+          ) : (
+            <div className="divide-y divide-border/40">
+              {coursesData?.data?.map((course) => (
+                <div key={course.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors group">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {course.thumbnailUrl ? (
+                      <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <BookOpen className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors truncate">{course.title}</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        course.status === "published" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" :
+                        "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                      }`}>{course.status}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                      <span className={`inline-flex items-center gap-1 text-xs ${typeBadge(course.courseType).split(" ").filter(c => c.includes("text-")).join(" ")}`}>
+                        {typeIcon(course.courseType)}
+                        <span className="capitalize">{course.courseType}</span>
+                      </span>
+                      <span className="text-xs text-muted-foreground">{course.moduleCount} module{course.moduleCount !== 1 ? "s" : ""}</span>
+                      <span className="text-xs text-muted-foreground">{course.enrollmentCount} enrolled</span>
+                      <span className="text-xs font-medium text-foreground">{course.price ? `₹${course.price.toLocaleString()}` : "Free"}</span>
+                    </div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg flex-shrink-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                      <Link href={`/admin/courses/${course.id}`}>
+                        <DropdownMenuItem className="cursor-pointer">
+                          <Edit className="mr-2 h-4 w-4" /> Edit Content
+                        </DropdownMenuItem>
+                      </Link>
+                      {course.status !== "published" ? (
+                        <DropdownMenuItem onClick={() => handlePublish(course.id)} className="cursor-pointer text-emerald-600 focus:text-emerald-600">
+                          <Globe className="mr-2 h-4 w-4" /> Publish
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => handleUnpublish(course.id)} className="cursor-pointer text-amber-600 focus:text-amber-600">
+                          <Archive className="mr-2 h-4 w-4" /> Unpublish
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </AdminLayout>

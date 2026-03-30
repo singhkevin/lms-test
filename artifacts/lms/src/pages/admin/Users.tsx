@@ -280,7 +280,7 @@ export default function AdminUsers() {
 
         <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-border/50">
-            <div className="relative max-w-sm">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search by name or email..."
@@ -291,82 +291,70 @@ export default function AdminUsers() {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-muted/30 text-muted-foreground uppercase text-xs font-semibold">
-                <tr>
-                  <th className="px-6 py-4">User</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Joined</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {isLoading ? (
-                  <tr><td colSpan={4} className="px-6 py-8 text-center text-muted-foreground animate-pulse">Loading users...</td></tr>
-                ) : data?.data?.length === 0 ? (
-                  <tr><td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">No users found.</td></tr>
-                ) : data?.data?.map((user) => (
-                  <tr key={user.id} className="hover:bg-muted/20 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border border-border/50 shadow-sm">
-                          <AvatarImage src={user.avatarUrl || ""} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                            {user.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="font-semibold text-foreground">{user.name}</div>
-                          <div className="text-xs text-muted-foreground">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge variant="outline" className={`inline-flex items-center gap-1.5 ${roleBadge(user.role)}`}>
+          {isLoading ? (
+            <div className="p-6 space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />)}
+            </div>
+          ) : data?.data?.length === 0 ? (
+            <div className="px-6 py-12 text-center text-muted-foreground">No users found.</div>
+          ) : (
+            <div className="divide-y divide-border/40">
+              {data?.data?.map((user) => (
+                <div key={user.id} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors">
+                  <Avatar className="h-10 w-10 flex-shrink-0 border border-border/50 shadow-sm">
+                    <AvatarImage src={user.avatarUrl || ""} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium text-sm">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-foreground text-sm truncate">{user.name}</span>
+                      <Badge variant="outline" className={`inline-flex items-center gap-1 text-xs py-0 ${roleBadge(user.role)}`}>
                         {roleIcon(user.role)}
                         <span className="capitalize">{user.role}</span>
                       </Badge>
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {format(new Date(user.createdAt), "MMM d, yyyy")}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-52 rounded-xl">
-                          {user.role === "student" && (
-                            <DropdownMenuItem onClick={() => setAssignTarget(user)} className="cursor-pointer">
-                              <BookOpen className="mr-2 h-4 w-4" /> Manage Courses
-                            </DropdownMenuItem>
-                          )}
-                          {user.role !== "owner" && (
-                            <>
-                              <DropdownMenuItem
-                                onClick={() => handleRoleChange(user.id, user.role === "student" ? "instructor" : "student")}
-                                className="cursor-pointer"
-                              >
-                                <RefreshCw className="mr-2 h-4 w-4" />
-                                Make {user.role === "student" ? "Instructor" : "Student"}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => setDeleteTarget(user)} className="cursor-pointer text-destructive focus:text-destructive">
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete User
-                              </DropdownMenuItem>
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                    <div className="text-xs text-muted-foreground/70 hidden sm:block">
+                      Joined {format(new Date(user.createdAt), "MMM d, yyyy")}
+                    </div>
+                  </div>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg flex-shrink-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-52 rounded-xl">
+                      {user.role === "student" && (
+                        <DropdownMenuItem onClick={() => setAssignTarget(user)} className="cursor-pointer">
+                          <BookOpen className="mr-2 h-4 w-4" /> Manage Courses
+                        </DropdownMenuItem>
+                      )}
+                      {user.role !== "owner" && (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handleRoleChange(user.id, user.role === "student" ? "instructor" : "student")}
+                            className="cursor-pointer"
+                          >
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            Make {user.role === "student" ? "Instructor" : "Student"}
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setDeleteTarget(user)} className="cursor-pointer text-destructive focus:text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete User
+                          </DropdownMenuItem>
+                        </>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

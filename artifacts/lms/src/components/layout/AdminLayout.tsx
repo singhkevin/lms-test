@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Navbar } from "./Navbar";
-import { AdminSidebar } from "./AdminSidebar";
+import { AdminSidebar, AdminMobileHeader } from "./AdminSidebar";
 import { useAuth } from "@/lib/auth";
 import { useLocation } from "wouter";
 import { Loader2 } from "lucide-react";
@@ -32,9 +32,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col bg-muted/20">
       <Navbar />
+      <AdminMobileHeader />
       <div className="flex-1 flex overflow-hidden">
         <AdminSidebar />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto">
             {children}
           </div>
