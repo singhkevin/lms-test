@@ -88,6 +88,20 @@ artifacts-monorepo/
 - **instructor** — create/manage own courses, view enrollments/orders
 - **student** — enroll in courses, track progress, community
 
+## Production Bootstrap (First Owner Account)
+
+A one-time setup endpoint allows creating the first owner account in a fresh production deployment:
+
+```
+POST /api/auth/setup
+{ "name": "...", "email": "...", "password": "...", "setupToken": "<SETUP_TOKEN value>" }
+```
+
+- The endpoint is **disabled by default** — it returns 403 if the `SETUP_TOKEN` environment variable is not set.
+- Set the `SETUP_TOKEN` secret in the Replit Secrets panel, call the endpoint, then **remove the secret** to re-disable the endpoint.
+- Returns 409 Conflict if any users already exist (one-time use).
+- Returns a JWT token on success; subsequent logins use the normal `/api/auth/login` endpoint.
+
 ## Environment Variables
 
 - `DATABASE_URL` — Postgres connection string (auto-provided by Replit)
@@ -95,6 +109,7 @@ artifacts-monorepo/
 - `RESEND_API_KEY` — for transactional email (password reset, enrollment confirmation)
 - `FROM_EMAIL` — sender email address
 - `APP_URL` — base URL for password reset links
+- `SETUP_TOKEN` — (optional) enables one-time owner bootstrap via `POST /api/auth/setup`; remove after use
 
 ## Adding Routes
 

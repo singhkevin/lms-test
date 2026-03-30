@@ -305,7 +305,7 @@ router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, re
       order: z.number().optional(),
       isFree: z.boolean().optional(),
     }).parse(req.body);
-    if (data.type === "video" && data.videoUrl !== undefined && !isValidLoomUrl(data.videoUrl)) {
+    if (data.videoUrl !== undefined && !isValidLoomUrl(data.videoUrl)) {
       res.status(400).json({ error: "ValidationError", message: "Video URL must be a valid Loom link (loom.com)" });
       return;
     }
