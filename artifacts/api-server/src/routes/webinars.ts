@@ -144,7 +144,7 @@ router.delete("/:webinarId", requireAuth, requireRole("owner", "instructor"), as
 });
 
 // RSVP: student signs up
-router.post("/:webinarId/rsvp", requireAuth, async (req: AuthenticatedRequest, res) => {
+router.post("/:webinarId/rsvp", requireAuth, requireRole("student"), async (req: AuthenticatedRequest, res) => {
   try {
     const webinarId = req.params["webinarId"]!;
     const userId = req.user!.userId;
@@ -170,7 +170,7 @@ router.post("/:webinarId/rsvp", requireAuth, async (req: AuthenticatedRequest, r
 });
 
 // RSVP: student cancels
-router.delete("/:webinarId/rsvp", requireAuth, async (req: AuthenticatedRequest, res) => {
+router.delete("/:webinarId/rsvp", requireAuth, requireRole("student"), async (req: AuthenticatedRequest, res) => {
   try {
     const webinarId = req.params["webinarId"]!;
     const userId = req.user!.userId;

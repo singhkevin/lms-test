@@ -45,7 +45,7 @@ export default function WebinarDetail() {
 
   const hasRsvped = optimisticRsvped !== null ? optimisticRsvped : (webinar?.hasRsvped ?? false);
   const rsvpCount = webinar
-    ? (webinar.rsvpCount + (optimisticRsvped !== null ? (optimisticRsvped ? 1 : -1) - (webinar.hasRsvped ? 1 : -1) : 0))
+    ? webinar.rsvpCount + (optimisticRsvped === null ? 0 : optimisticRsvped ? 1 : -1)
     : 0;
 
   const rsvpMutation = useMutation({
