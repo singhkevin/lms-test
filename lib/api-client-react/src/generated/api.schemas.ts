@@ -176,6 +176,7 @@ export interface Course {
   instructorId: string;
   instructorName?: string | null;
   enrollmentCount: number;
+  moduleCount: number;
   createdAt: string;
   updatedAt: string;
 }

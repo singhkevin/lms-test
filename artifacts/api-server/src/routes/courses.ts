@@ -16,8 +16,17 @@ const courseShape = {
   createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
 };
 
-function formatCourse(c: any, enrollmentCount = 0) {
-  return { ...c, price: c.price ? Number(c.price) : null, enrollmentCount };
+interface CourseRow {
+  id: string; title: string; slug: string;
+  description: string | null; longDescription: string | null;
+  courseType: "recorded" | "live"; thumbnailUrl: string | null;
+  price: string | null; status: "draft" | "published" | "archived";
+  instructorId: string | null; instructorName: string | null;
+  createdAt: Date; updatedAt: Date;
+}
+
+function formatCourse(c: CourseRow, enrollmentCount = 0, moduleCount = 0) {
+  return { ...c, price: c.price ? Number(c.price) : null, enrollmentCount, moduleCount };
 }
 
 router.get("/catalog", async (_req, res) => {
@@ -29,9 +38,13 @@ router.get("/catalog", async (_req, res) => {
 
     const enrollmentCounts = await db.select({ courseId: enrollmentsTable.courseId, count: sql<number>`count(*)` })
       .from(enrollmentsTable).groupBy(enrollmentsTable.courseId);
-    const countMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
+    const enrollMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
 
-    res.json({ data: courses.map(c => formatCourse(c, countMap[c.id] ?? 0)), total: courses.length, page: 1, limit: 100 });
+    const moduleCounts = await db.select({ courseId: sectionsTable.courseId, count: sql<number>`count(*)` })
+      .from(sectionsTable).groupBy(sectionsTable.courseId);
+    const moduleMap = Object.fromEntries(moduleCounts.map(s => [s.courseId, Number(s.count)]));
+
+    res.json({ data: courses.map(c => formatCourse(c, enrollMap[c.id] ?? 0, moduleMap[c.id] ?? 0)), total: courses.length, page: 1, limit: 100 });
   } catch (err) {
     res.status(500).json({ error: "InternalError" });
   }
@@ -59,9 +72,13 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
 
     const enrollmentCounts = await db.select({ courseId: enrollmentsTable.courseId, count: sql<number>`count(*)` })
       .from(enrollmentsTable).groupBy(enrollmentsTable.courseId);
-    const countMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
+    const enrollMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
 
-    res.json({ data: courses.map(c => formatCourse(c, countMap[c.id] ?? 0)), total: Number(countResult?.count ?? 0), page, limit });
+    const moduleCounts = await db.select({ courseId: sectionsTable.courseId, count: sql<number>`count(*)` })
+      .from(sectionsTable).groupBy(sectionsTable.courseId);
+    const moduleMap = Object.fromEntries(moduleCounts.map(s => [s.courseId, Number(s.count)]));
+
+    res.json({ data: courses.map(c => formatCourse(c, enrollMap[c.id] ?? 0, moduleMap[c.id] ?? 0)), total: Number(countResult?.count ?? 0), page, limit });
   } catch (err) {
     req.log.error({ err }, "List courses error");
     res.status(500).json({ error: "InternalError" });

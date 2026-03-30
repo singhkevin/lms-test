@@ -186,4 +186,27 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
+// One-time setup endpoint — creates the first owner account if no users exist
+router.post("/setup", async (req, res) => {
+  try {
+    const [existing] = await db.select({ count: usersTable.id }).from(usersTable).limit(1);
+    if (existing) {
+      res.status(409).json({ error: "Conflict", message: "App already has users. Use login instead." });
+      return;
+    }
+    const data = z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      password: z.string().min(8),
+    }).parse(req.body);
+    const hashed = await hashPassword(data.password);
+    const [user] = await db.insert(usersTable).values({ name: data.name, email: data.email, passwordHash: hashed, role: "owner" }).returning();
+    const token = signToken(user.id, user.role);
+    res.status(201).json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
+    res.status(500).json({ error: "InternalError" });
+  }
+});
+
 export default router;

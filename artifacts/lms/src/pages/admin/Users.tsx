@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
-import { useListUsers, useDeleteUser, useUpdateUser, useCreateUser, useCreateEnrollment, useListCourses } from "@workspace/api-client-react";
+import {
+  useListUsers, useDeleteUser, useUpdateUser, useCreateUser,
+  useCreateEnrollment, useListCourses, useListEnrollments, useRevokeEnrollment,
+} from "@workspace/api-client-react";
 import type { UserProfile } from "@workspace/api-client-react";
+import { getListUsersQueryKey, getListEnrollmentsQueryKey } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -17,11 +21,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Plus, MoreVertical, Shield, User, GraduationCap, Trash2, RefreshCw, BookOpen } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, MoreVertical, Shield, User, GraduationCap, Trash2, RefreshCw, BookOpen, X } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import { getListUsersQueryKey } from "@workspace/api-client-react";
 
 type RoleTab = "all" | "student" | "instructor";
 
@@ -37,23 +41,130 @@ const roleBadge = (role: string) => {
   return "bg-blue-500/10 text-blue-600 border-blue-500/20";
 };
 
+function CourseAssignmentPanel({ user, onClose }: { user: UserProfile; onClose: () => void }) {
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const queryClient = useQueryClient();
+
+  const { data: coursesData } = useListCourses({ limit: 100 });
+  const { data: enrollmentsData, isLoading: enrollLoading } = useListEnrollments({ userId: user.id, limit: 100 });
+  const createEnrollment = useCreateEnrollment();
+  const revokeEnrollment = useRevokeEnrollment();
+
+  const activeEnrollments = enrollmentsData?.data?.filter(e => e.status === "active") ?? [];
+  const enrolledCourseIds = new Set(activeEnrollments.map(e => e.courseId));
+  const availableCourses = coursesData?.data?.filter(c => !enrolledCourseIds.has(c.id)) ?? [];
+
+  const invalidateEnrollments = () =>
+    queryClient.invalidateQueries({ queryKey: getListEnrollmentsQueryKey({ userId: user.id }) });
+
+  const handleAssign = async () => {
+    if (!selectedCourseId) return;
+    try {
+      await createEnrollment.mutateAsync({ data: { userId: user.id, courseId: selectedCourseId } });
+      toast.success("Student enrolled successfully");
+      setSelectedCourseId("");
+      invalidateEnrollments();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to enroll";
+      toast.error(msg);
+    }
+  };
+
+  const handleRevoke = async (enrollmentId: string) => {
+    try {
+      await revokeEnrollment.mutateAsync({ enrollmentId });
+      toast.success("Enrollment revoked");
+      invalidateEnrollments();
+    } catch {
+      toast.error("Failed to revoke enrollment");
+    }
+  };
+
+  return (
+    <div className="space-y-5 mt-2">
+      {/* Current Enrollments */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Current Enrollments</Label>
+        {enrollLoading ? (
+          <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+        ) : activeEnrollments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No active enrollments.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {activeEnrollments.map(e => {
+              const course = coursesData?.data?.find(c => c.id === e.courseId);
+              return (
+                <div key={e.id} className="flex items-center justify-between rounded-xl border border-border/50 px-3 py-2 bg-muted/20">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <BookOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <span className="text-sm font-medium truncate">{course?.title ?? e.courseId}</span>
+                  </div>
+                  <Button
+                    variant="ghost" size="icon"
+                    className="h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive shrink-0"
+                    onClick={() => handleRevoke(e.id)}
+                    disabled={revokeEnrollment.isPending}
+                    title="Revoke enrollment"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Assign New Course */}
+      <div className="space-y-2">
+        <Label className="text-sm font-semibold">Assign New Course</Label>
+        {availableCourses.length === 0 ? (
+          <p className="text-sm text-muted-foreground">All courses are already assigned.</p>
+        ) : (
+          <div className="flex gap-2">
+            <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
+              <SelectTrigger className="rounded-xl flex-1">
+                <SelectValue placeholder="Choose a course..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableCourses.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              onClick={handleAssign}
+              disabled={!selectedCourseId || createEnrollment.isPending}
+              className="rounded-xl"
+            >
+              {createEnrollment.isPending ? "Enrolling..." : "Enroll"}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex justify-end pt-1">
+        <Button type="button" variant="outline" onClick={onClose} className="rounded-xl">Close</Button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminUsers() {
   const [tab, setTab] = useState<RoleTab>("all");
   const [search, setSearch] = useState("");
   const [addOpen, setAddOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UserProfile | null>(null);
   const [assignTarget, setAssignTarget] = useState<UserProfile | null>(null);
-  const [assignCourseId, setAssignCourseId] = useState("");
 
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "student" as "student" | "instructor" });
 
   const queryClient = useQueryClient();
   const { data, isLoading } = useListUsers({ search, role: tab === "all" ? undefined : tab, limit: 100 });
-  const { data: coursesData } = useListCourses({ limit: 100 });
   const createUser = useCreateUser();
   const deleteUser = useDeleteUser();
   const updateUser = useUpdateUser();
-  const createEnrollment = useCreateEnrollment();
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() });
 
@@ -65,8 +176,9 @@ export default function AdminUsers() {
       setAddOpen(false);
       setForm({ name: "", email: "", password: "", role: "student" });
       invalidate();
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to create user");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to create user";
+      toast.error(msg);
     }
   };
 
@@ -84,24 +196,11 @@ export default function AdminUsers() {
 
   const handleRoleChange = async (userId: string, role: "student" | "instructor") => {
     try {
-      await updateUser.mutateAsync({ userId, updateUserRequest: { role } });
+      await updateUser.mutateAsync({ userId, data: { role } });
       toast.success("Role updated");
       invalidate();
     } catch {
       toast.error("Failed to update role");
-    }
-  };
-
-  const handleAssign = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!assignTarget || !assignCourseId) return;
-    try {
-      await createEnrollment.mutateAsync({ createEnrollmentRequest: { userId: assignTarget.id, courseId: assignCourseId } });
-      toast.success(`${assignTarget.name} enrolled successfully`);
-      setAssignTarget(null);
-      setAssignCourseId("");
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to enroll");
     }
   };
 
@@ -224,10 +323,10 @@ export default function AdminUsers() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${roleBadge(user.role)}`}>
+                      <Badge variant="outline" className={`inline-flex items-center gap-1.5 ${roleBadge(user.role)}`}>
                         {roleIcon(user.role)}
                         <span className="capitalize">{user.role}</span>
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-6 py-4 text-muted-foreground">
                       {format(new Date(user.createdAt), "MMM d, yyyy")}
@@ -241,8 +340,8 @@ export default function AdminUsers() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-52 rounded-xl">
                           {user.role === "student" && (
-                            <DropdownMenuItem onClick={() => { setAssignTarget(user); setAssignCourseId(""); }} className="cursor-pointer">
-                              <BookOpen className="mr-2 h-4 w-4" /> Assign Course
+                            <DropdownMenuItem onClick={() => setAssignTarget(user)} className="cursor-pointer">
+                              <BookOpen className="mr-2 h-4 w-4" /> Manage Courses
                             </DropdownMenuItem>
                           )}
                           {user.role !== "owner" && (
@@ -289,33 +388,15 @@ export default function AdminUsers() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Assign Course Dialog */}
+      {/* Assign / Unassign Courses Dialog */}
       <Dialog open={!!assignTarget} onOpenChange={open => !open && setAssignTarget(null)}>
-        <DialogContent className="sm:max-w-[420px] rounded-2xl">
+        <DialogContent className="sm:max-w-[460px] rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Assign Course to {assignTarget?.name}</DialogTitle>
+            <DialogTitle>Manage Courses — {assignTarget?.name}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleAssign} className="space-y-4 mt-2">
-            <div className="space-y-2">
-              <Label>Select Course</Label>
-              <Select value={assignCourseId} onValueChange={setAssignCourseId}>
-                <SelectTrigger className="rounded-xl">
-                  <SelectValue placeholder="Choose a course..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {coursesData?.data?.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="outline" onClick={() => setAssignTarget(null)} className="rounded-xl">Cancel</Button>
-              <Button type="submit" disabled={!assignCourseId || createEnrollment.isPending} className="rounded-xl">
-                {createEnrollment.isPending ? "Enrolling..." : "Enroll Student"}
-              </Button>
-            </div>
-          </form>
+          {assignTarget && (
+            <CourseAssignmentPanel user={assignTarget} onClose={() => setAssignTarget(null)} />
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>

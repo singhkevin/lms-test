@@ -223,19 +223,20 @@ export default function AdminCourses() {
                   <th className="px-6 py-4">Course</th>
                   <th className="px-6 py-4">Type</th>
                   <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Price</th>
+                  <th className="px-6 py-4">Modules</th>
                   <th className="px-6 py-4">Enrollments</th>
+                  <th className="px-6 py-4">Price</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">Loading courses...</td>
+                    <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">Loading courses...</td>
                   </tr>
                 ) : coursesData?.data?.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center">
+                    <td colSpan={7} className="px-6 py-12 text-center">
                       <div className="flex flex-col items-center justify-center text-muted-foreground">
                         <BookOpen className="h-12 w-12 mb-4 opacity-20" />
                         <p>No courses yet. Create your first one!</p>
@@ -275,11 +276,14 @@ export default function AdminCourses() {
                           {course.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 font-medium text-foreground">
-                        {course.price ? `₹${course.price.toLocaleString()}` : "Free"}
+                      <td className="px-6 py-4 text-muted-foreground">
+                        {course.moduleCount} module{course.moduleCount !== 1 ? "s" : ""}
                       </td>
                       <td className="px-6 py-4 text-muted-foreground">
                         {course.enrollmentCount}
+                      </td>
+                      <td className="px-6 py-4 font-medium text-foreground">
+                        {course.price ? `₹${course.price.toLocaleString()}` : "Free"}
                       </td>
                       <td className="px-6 py-4 text-right">
                         <DropdownMenu>
