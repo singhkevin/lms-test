@@ -10,6 +10,7 @@ import Landing from "@/pages/public/Landing";
 import CourseCatalog from "@/pages/public/CourseCatalog";
 import CourseLanding from "@/pages/public/CourseLanding";
 import Login from "@/pages/auth/Login";
+import StaffLogin from "@/pages/auth/StaffLogin";
 import Register from "@/pages/auth/Register";
 
 // Admin Pages
@@ -41,6 +42,7 @@ function Router() {
       
       {/* Auth */}
       <Route path="/login" component={Login} />
+      <Route path="/staff/login" component={StaffLogin} />
       <Route path="/register" component={Register} />
       
       {/* Student */}

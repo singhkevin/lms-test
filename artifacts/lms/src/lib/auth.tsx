@@ -11,7 +11,7 @@ setAuthTokenGetter(() => localStorage.getItem("token"));
 interface AuthContextType {
   user: UserProfile | null;
   isLoading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (data: LoginRequest, portal?: "student" | "staff") => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -45,22 +45,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest, portal: "student" | "staff" = "student") => {
     try {
       const response = await apiLogin(data);
+      const role = response.user.role;
+      const isStaff = role === 'owner' || role === 'instructor';
+
+      if (portal === "student" && isStaff) {
+        toast.error("This portal is for students only. Please use the Staff Login.");
+        throw new Error("Wrong portal");
+      }
+      if (portal === "staff" && !isStaff) {
+        toast.error("This portal is for staff only. Please use the Student Login.");
+        throw new Error("Wrong portal");
+      }
+
       localStorage.setItem("token", response.token);
       setUser(response.user);
       queryClient.setQueryData(getGetMeQueryKey(), response.user);
       toast.success("Welcome back!");
-      
-      // Redirect based on role
-      if (response.user.role === 'owner' || response.user.role === 'instructor') {
+
+      if (isStaff) {
         setLocation('/admin');
       } else {
         setLocation('/my-learning');
       }
     } catch (error: any) {
-      toast.error(error.message || "Failed to login");
+      if (error.message !== "Wrong portal") {
+        toast.error(error.message || "Failed to login");
+      }
       throw error;
     }
   };

@@ -11,7 +11,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      setLocation("/login");
+      setLocation("/staff/login");
     } else if (!isLoading && user && user.role !== 'owner' && user.role !== 'instructor') {
       setLocation("/my-learning");
     }
