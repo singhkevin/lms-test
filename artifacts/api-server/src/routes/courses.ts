@@ -245,6 +245,14 @@ router.delete("/:courseId/sections/:sectionId", requireAuth, requireRole("owner"
   }
 });
 
+function isValidLoomUrl(url: string | undefined): boolean {
+  if (!url) return true;
+  try {
+    const u = new URL(url);
+    return u.hostname === "www.loom.com" || u.hostname === "loom.com";
+  } catch { return false; }
+}
+
 // LESSONS
 router.post("/:courseId/sections/:sectionId/lessons", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
@@ -260,6 +268,10 @@ router.post("/:courseId/sections/:sectionId/lessons", requireAuth, requireRole("
       order: z.number().optional(),
       isFree: z.boolean().optional(),
     }).parse(req.body);
+    if (data.type === "video" && !isValidLoomUrl(data.videoUrl)) {
+      res.status(400).json({ error: "ValidationError", message: "Video URL must be a valid Loom link (loom.com)" });
+      return;
+    }
     const [lesson] = await db.insert(lessonsTable).values({ ...data, sectionId: req.params["sectionId"]!, order: data.order ?? 0, isFree: data.isFree ?? false }).returning();
     res.status(201).json(lesson);
   } catch (err) {
@@ -293,6 +305,10 @@ router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, re
       order: z.number().optional(),
       isFree: z.boolean().optional(),
     }).parse(req.body);
+    if (data.type === "video" && data.videoUrl !== undefined && !isValidLoomUrl(data.videoUrl)) {
+      res.status(400).json({ error: "ValidationError", message: "Video URL must be a valid Loom link (loom.com)" });
+      return;
+    }
     const [updated] = await db.update(lessonsTable).set(data).where(and(eq(lessonsTable.id, req.params["lessonId"]!), eq(lessonsTable.sectionId, req.params["sectionId"]!))).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     res.json(updated);
