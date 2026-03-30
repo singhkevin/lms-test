@@ -29,6 +29,7 @@ import MyLearning from "@/pages/student/MyLearning";
 import CoursePlayer from "@/pages/student/CoursePlayer";
 import StudentWebinars from "@/pages/student/Webinars";
 import WebinarDetail from "@/pages/student/WebinarDetail";
+import Profile from "@/pages/student/Profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/register" component={Register} />
       
       {/* Student */}
+      <Route path="/profile" component={Profile} />
       <Route path="/webinars" component={StudentWebinars} />
       <Route path="/webinars/:id" component={WebinarDetail} />
       <Route path="/my-learning" component={MyLearning} />
