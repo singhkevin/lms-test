@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success("Welcome back!");
 
       if (isStaff) {
-        setLocation('/admin');
+        setLocation('/admin/dashboard');
       } else {
         setLocation('/my-learning');
       }

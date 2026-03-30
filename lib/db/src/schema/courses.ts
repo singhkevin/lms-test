@@ -5,12 +5,15 @@ import { usersTable } from "./users";
 
 export const courseStatusEnum = pgEnum("course_status", ["draft", "published", "archived"]);
 export const lessonTypeEnum = pgEnum("lesson_type", ["video", "text", "quiz", "live"]);
+export const courseTypeEnum = pgEnum("course_type", ["recorded", "live"]);
 
 export const coursesTable = pgTable("courses", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
+  longDescription: text("long_description"),
+  courseType: courseTypeEnum("course_type").notNull().default("recorded"),
   thumbnailUrl: text("thumbnail_url"),
   price: numeric("price", { precision: 10, scale: 2 }),
   status: courseStatusEnum("status").notNull().default("draft"),
@@ -34,6 +37,9 @@ export const lessonsTable = pgTable("lessons", {
   type: lessonTypeEnum("type").notNull().default("text"),
   content: text("content"),
   videoUrl: text("video_url"),
+  pdfUrl: text("pdf_url"),
+  zoomMeetingUrl: text("zoom_meeting_url"),
+  zoomPassword: text("zoom_password"),
   durationMinutes: integer("duration_minutes"),
   order: integer("order").notNull().default(0),
   isFree: boolean("is_free").notNull().default(false),

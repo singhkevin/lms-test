@@ -20,7 +20,7 @@ export function AdminSidebar() {
   const [location] = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard, exact: false },
     { name: "Courses", href: "/admin/courses", icon: BookOpen },
     { name: "Users", href: "/admin/users", icon: Users },
     { name: "Enrollments", href: "/admin/enrollments", icon: GraduationCap },

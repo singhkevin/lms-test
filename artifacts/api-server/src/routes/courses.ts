@@ -1,21 +1,28 @@
 import { Router } from "express";
 import { db, coursesTable, sectionsTable, lessonsTable, usersTable, enrollmentsTable } from "@workspace/db";
-import { eq, and, ilike, sql, desc } from "drizzle-orm";
+import { eq, and, ilike, sql, desc, inArray } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthenticatedRequest } from "../lib/auth.js";
 import { uniqueSlug } from "../lib/slugify.js";
 import { z } from "zod";
 
 const router = Router();
 
+const courseShape = {
+  id: coursesTable.id, title: coursesTable.title, slug: coursesTable.slug,
+  description: coursesTable.description, longDescription: coursesTable.longDescription,
+  courseType: coursesTable.courseType, thumbnailUrl: coursesTable.thumbnailUrl,
+  price: coursesTable.price, status: coursesTable.status,
+  instructorId: coursesTable.instructorId, instructorName: usersTable.name,
+  createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
+};
+
+function formatCourse(c: any, enrollmentCount = 0) {
+  return { ...c, price: c.price ? Number(c.price) : null, enrollmentCount };
+}
+
 router.get("/catalog", async (_req, res) => {
   try {
-    const courses = await db.select({
-      id: coursesTable.id, title: coursesTable.title, slug: coursesTable.slug,
-      description: coursesTable.description, thumbnailUrl: coursesTable.thumbnailUrl,
-      price: coursesTable.price, status: coursesTable.status,
-      instructorId: coursesTable.instructorId, instructorName: usersTable.name,
-      createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
-    }).from(coursesTable)
+    const courses = await db.select(courseShape).from(coursesTable)
       .leftJoin(usersTable, eq(coursesTable.instructorId, usersTable.id))
       .where(eq(coursesTable.status, "published"))
       .orderBy(desc(coursesTable.createdAt));
@@ -24,10 +31,7 @@ router.get("/catalog", async (_req, res) => {
       .from(enrollmentsTable).groupBy(enrollmentsTable.courseId);
     const countMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
 
-    res.json({
-      data: courses.map(c => ({ ...c, price: c.price ? Number(c.price) : null, enrollmentCount: countMap[c.id] ?? 0 })),
-      total: courses.length, page: 1, limit: 100,
-    });
+    res.json({ data: courses.map(c => formatCourse(c, countMap[c.id] ?? 0)), total: courses.length, page: 1, limit: 100 });
   } catch (err) {
     res.status(500).json({ error: "InternalError" });
   }
@@ -48,13 +52,7 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
     const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(coursesTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
-    const courses = await db.select({
-      id: coursesTable.id, title: coursesTable.title, slug: coursesTable.slug,
-      description: coursesTable.description, thumbnailUrl: coursesTable.thumbnailUrl,
-      price: coursesTable.price, status: coursesTable.status,
-      instructorId: coursesTable.instructorId, instructorName: usersTable.name,
-      createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
-    }).from(coursesTable)
+    const courses = await db.select(courseShape).from(coursesTable)
       .leftJoin(usersTable, eq(coursesTable.instructorId, usersTable.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .limit(limit).offset(offset).orderBy(desc(coursesTable.createdAt));
@@ -63,10 +61,7 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
       .from(enrollmentsTable).groupBy(enrollmentsTable.courseId);
     const countMap = Object.fromEntries(enrollmentCounts.map(e => [e.courseId, Number(e.count)]));
 
-    res.json({
-      data: courses.map(c => ({ ...c, price: c.price ? Number(c.price) : null, enrollmentCount: countMap[c.id] ?? 0 })),
-      total: Number(countResult?.count ?? 0), page, limit,
-    });
+    res.json({ data: courses.map(c => formatCourse(c, countMap[c.id] ?? 0)), total: Number(countResult?.count ?? 0), page, limit });
   } catch (err) {
     req.log.error({ err }, "List courses error");
     res.status(500).json({ error: "InternalError" });
@@ -75,16 +70,25 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
 
 router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    const data = z.object({ title: z.string().min(1), description: z.string().optional(), thumbnailUrl: z.string().optional(), price: z.number().optional() }).parse(req.body);
+    const data = z.object({
+      title: z.string().min(1),
+      description: z.string().optional(),
+      longDescription: z.string().optional(),
+      courseType: z.enum(["recorded", "live"]).optional().default("recorded"),
+      thumbnailUrl: z.string().optional(),
+      price: z.number().optional(),
+    }).parse(req.body);
     const slug = uniqueSlug(data.title);
 
     const [course] = await db.insert(coursesTable).values({
-      ...data, slug, price: data.price?.toString(), instructorId: req.user!.userId,
+      title: data.title, description: data.description, longDescription: data.longDescription,
+      courseType: data.courseType, thumbnailUrl: data.thumbnailUrl,
+      slug, price: data.price?.toString(), instructorId: req.user!.userId,
     }).returning();
 
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, req.user!.userId)).limit(1);
 
-    res.status(201).json({ ...course, price: course.price ? Number(course.price) : null, instructorName: instructor?.name, enrollmentCount: 0 });
+    res.status(201).json(formatCourse({ ...course, instructorName: instructor?.name }, 0));
   } catch (err) {
     req.log.error({ err }, "Create course error");
     res.status(500).json({ error: "InternalError" });
@@ -93,13 +97,7 @@ router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: Au
 
 router.get("/:courseId", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
-    const [course] = await db.select({
-      id: coursesTable.id, title: coursesTable.title, slug: coursesTable.slug,
-      description: coursesTable.description, thumbnailUrl: coursesTable.thumbnailUrl,
-      price: coursesTable.price, status: coursesTable.status,
-      instructorId: coursesTable.instructorId, instructorName: usersTable.name,
-      createdAt: coursesTable.createdAt, updatedAt: coursesTable.updatedAt,
-    }).from(coursesTable)
+    const [course] = await db.select(courseShape).from(coursesTable)
       .leftJoin(usersTable, eq(coursesTable.instructorId, usersTable.id))
       .where(eq(coursesTable.id, req.params["courseId"]!)).limit(1);
 
@@ -108,14 +106,14 @@ router.get("/:courseId", requireAuth, async (req: AuthenticatedRequest, res) => 
     const sections = await db.select().from(sectionsTable).where(eq(sectionsTable.courseId, course.id)).orderBy(sectionsTable.order);
     const sectionIds = sections.map(s => s.id);
     const lessons = sectionIds.length > 0
-      ? await db.select().from(lessonsTable).where(sql`${lessonsTable.sectionId} = ANY(${sectionIds})`).orderBy(lessonsTable.order)
+      ? await db.select().from(lessonsTable).where(inArray(lessonsTable.sectionId, sectionIds)).orderBy(lessonsTable.order)
       : [];
 
     const [{ count: enrollmentCount }] = await db.select({ count: sql<number>`count(*)` }).from(enrollmentsTable).where(eq(enrollmentsTable.courseId, course.id));
 
     const sectionsWithLessons = sections.map(s => ({ ...s, lessons: lessons.filter(l => l.sectionId === s.id) }));
 
-    res.json({ ...course, price: course.price ? Number(course.price) : null, enrollmentCount: Number(enrollmentCount), sections: sectionsWithLessons });
+    res.json({ ...formatCourse(course, Number(enrollmentCount)), sections: sectionsWithLessons });
   } catch (err) {
     req.log.error({ err }, "Get course error");
     res.status(500).json({ error: "InternalError" });
@@ -124,7 +122,16 @@ router.get("/:courseId", requireAuth, async (req: AuthenticatedRequest, res) => 
 
 router.patch("/:courseId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    const data = z.object({ title: z.string().optional(), description: z.string().optional(), thumbnailUrl: z.string().optional(), price: z.number().optional(), status: z.enum(["draft", "published", "archived"]).optional() }).parse(req.body);
+    const data = z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      longDescription: z.string().optional(),
+      courseType: z.enum(["recorded", "live"]).optional(),
+      thumbnailUrl: z.string().optional(),
+      price: z.number().optional(),
+      status: z.enum(["draft", "published", "archived"]).optional(),
+    }).parse(req.body);
+
     const updateData: Record<string, unknown> = { ...data, updatedAt: new Date() };
     if (data.price !== undefined) updateData["price"] = data.price.toString();
 
@@ -132,7 +139,7 @@ router.patch("/:courseId", requireAuth, requireRole("owner", "instructor"), asyn
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
 
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
-    res.json({ ...updated, price: updated.price ? Number(updated.price) : null, instructorName: instructor?.name, enrollmentCount: 0 });
+    res.json(formatCourse({ ...updated, instructorName: instructor?.name }, 0));
   } catch (err) {
     req.log.error({ err }, "Update course error");
     res.status(500).json({ error: "InternalError" });
@@ -154,9 +161,21 @@ router.post("/:courseId/publish", requireAuth, requireRole("owner", "instructor"
     const [updated] = await db.update(coursesTable).set({ status: "published", updatedAt: new Date() }).where(eq(coursesTable.id, req.params["courseId"]!)).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
-    res.json({ ...updated, price: updated.price ? Number(updated.price) : null, instructorName: instructor?.name, enrollmentCount: 0 });
+    res.json(formatCourse({ ...updated, instructorName: instructor?.name }, 0));
   } catch (err) {
     req.log.error({ err }, "Publish course error");
+    res.status(500).json({ error: "InternalError" });
+  }
+});
+
+router.post("/:courseId/unpublish", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
+  try {
+    const [updated] = await db.update(coursesTable).set({ status: "draft", updatedAt: new Date() }).where(eq(coursesTable.id, req.params["courseId"]!)).returning();
+    if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
+    const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
+    res.json(formatCourse({ ...updated, instructorName: instructor?.name }, 0));
+  } catch (err) {
+    req.log.error({ err }, "Unpublish course error");
     res.status(500).json({ error: "InternalError" });
   }
 });
@@ -167,7 +186,7 @@ router.get("/:courseId/sections", requireAuth, async (req: AuthenticatedRequest,
     const sections = await db.select().from(sectionsTable).where(eq(sectionsTable.courseId, req.params["courseId"]!)).orderBy(sectionsTable.order);
     const sectionIds = sections.map(s => s.id);
     const lessons = sectionIds.length > 0
-      ? await db.select().from(lessonsTable).where(sql`${lessonsTable.sectionId} = ANY(${sectionIds})`).orderBy(lessonsTable.order)
+      ? await db.select().from(lessonsTable).where(inArray(lessonsTable.sectionId, sectionIds)).orderBy(lessonsTable.order)
       : [];
     res.json(sections.map(s => ({ ...s, lessons: lessons.filter(l => l.sectionId === s.id) })));
   } catch (err) {
@@ -212,7 +231,18 @@ router.delete("/:courseId/sections/:sectionId", requireAuth, requireRole("owner"
 // LESSONS
 router.post("/:courseId/sections/:sectionId/lessons", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    const data = z.object({ title: z.string().min(1), type: z.enum(["video", "text", "quiz", "live"]).optional().default("text"), content: z.string().optional(), videoUrl: z.string().optional(), durationMinutes: z.number().optional(), order: z.number().optional(), isFree: z.boolean().optional() }).parse(req.body);
+    const data = z.object({
+      title: z.string().min(1),
+      type: z.enum(["video", "text", "quiz", "live"]).optional().default("text"),
+      content: z.string().optional(),
+      videoUrl: z.string().optional(),
+      pdfUrl: z.string().optional(),
+      zoomMeetingUrl: z.string().optional(),
+      zoomPassword: z.string().optional(),
+      durationMinutes: z.number().optional(),
+      order: z.number().optional(),
+      isFree: z.boolean().optional(),
+    }).parse(req.body);
     const [lesson] = await db.insert(lessonsTable).values({ ...data, sectionId: req.params["sectionId"]!, order: data.order ?? 0, isFree: data.isFree ?? false }).returning();
     res.status(201).json(lesson);
   } catch (err) {
@@ -234,7 +264,18 @@ router.get("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, asyn
 
 router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    const data = z.object({ title: z.string().optional(), type: z.enum(["video", "text", "quiz", "live"]).optional(), content: z.string().optional(), videoUrl: z.string().optional(), durationMinutes: z.number().optional(), order: z.number().optional(), isFree: z.boolean().optional() }).parse(req.body);
+    const data = z.object({
+      title: z.string().optional(),
+      type: z.enum(["video", "text", "quiz", "live"]).optional(),
+      content: z.string().optional(),
+      videoUrl: z.string().optional(),
+      pdfUrl: z.string().optional(),
+      zoomMeetingUrl: z.string().optional(),
+      zoomPassword: z.string().optional(),
+      durationMinutes: z.number().optional(),
+      order: z.number().optional(),
+      isFree: z.boolean().optional(),
+    }).parse(req.body);
     const [updated] = await db.update(lessonsTable).set(data).where(and(eq(lessonsTable.id, req.params["lessonId"]!), eq(lessonsTable.sectionId, req.params["sectionId"]!))).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     res.json(updated);

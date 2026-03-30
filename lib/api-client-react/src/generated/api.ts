@@ -1159,6 +1159,80 @@ export const useDeleteUser = <
 };
 
 /**
+ * @summary Create a user (admin only)
+ */
+export const getCreateUserUrl = () => {
+  return `/api/users`;
+};
+
+export const createUser = async (
+  createUserRequest: import("./api.schemas").CreateUserRequest,
+  options?: RequestInit,
+): Promise<import("./api.schemas").UserProfile> => {
+  return customFetch<import("./api.schemas").UserProfile>(getCreateUserUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createUserRequest),
+  });
+};
+
+export const getCreateUserMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createUser>>,
+    TError,
+    { data: import("./api.schemas").CreateUserRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createUser>>,
+  TError,
+  { data: import("./api.schemas").CreateUserRequest },
+  TContext
+> => {
+  const mutationKey = ["createUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createUser>>,
+    { data: import("./api.schemas").CreateUserRequest }
+  > = (props) => {
+    const { data } = props ?? {};
+    return createUser(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useCreateUser = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createUser>>,
+    TError,
+    { data: import("./api.schemas").CreateUserRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createUser>>,
+  TError,
+  { data: import("./api.schemas").CreateUserRequest },
+  TContext
+> => {
+  return useMutation(getCreateUserMutationOptions(options));
+};
+
+/**
  * @summary Change user password (self or admin)
  */
 export const getChangeUserPasswordUrl = (userId: string) => {
@@ -1860,6 +1934,78 @@ export const usePublishCourse = <
   TContext
 > => {
   return useMutation(getPublishCourseMutationOptions(options));
+};
+
+/**
+ * @summary Unpublish a course (set back to draft)
+ */
+export const getUnpublishCourseUrl = (courseId: string) => {
+  return `/api/courses/${courseId}/unpublish`;
+};
+
+export const unpublishCourse = async (
+  courseId: string,
+  options?: RequestInit,
+): Promise<Course> => {
+  return customFetch<Course>(getUnpublishCourseUrl(courseId), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getUnpublishCourseMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unpublishCourse>>,
+    TError,
+    { courseId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof unpublishCourse>>,
+  TError,
+  { courseId: string },
+  TContext
+> => {
+  const mutationKey = ["unpublishCourse"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof unpublishCourse>>,
+    { courseId: string }
+  > = (props) => {
+    const { courseId } = props ?? {};
+    return unpublishCourse(courseId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export const useUnpublishCourse = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof unpublishCourse>>,
+    TError,
+    { courseId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof unpublishCourse>>,
+  TError,
+  { courseId: string },
+  TContext
+> => {
+  return useMutation(getUnpublishCourseMutationOptions(options));
 };
 
 /**

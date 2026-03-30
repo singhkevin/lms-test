@@ -14,7 +14,6 @@ router.get("/", requireAuth, requireRole("owner", "instructor"), async (req: Aut
     const role = req.query["role"] as string | undefined;
     const offset = (page - 1) * limit;
 
-    let query = db.select().from(usersTable);
     const conditions = [];
     if (search) conditions.push(or(ilike(usersTable.name, `%${search}%`), ilike(usersTable.email, `%${search}%`)));
     if (role) conditions.push(eq(usersTable.role, role as "owner" | "instructor" | "student"));
@@ -22,7 +21,7 @@ router.get("/", requireAuth, requireRole("owner", "instructor"), async (req: Aut
     const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(usersTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined);
 
-    const users = await query
+    const users = await db.select().from(usersTable)
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .limit(limit).offset(offset).orderBy(usersTable.createdAt);
 
@@ -34,6 +33,31 @@ router.get("/", requireAuth, requireRole("owner", "instructor"), async (req: Aut
     });
   } catch (err) {
     req.log.error({ err }, "List users error");
+    res.status(500).json({ error: "InternalError" });
+  }
+});
+
+// Admin create user
+router.post("/", requireAuth, requireRole("owner"), async (req: AuthenticatedRequest, res) => {
+  try {
+    const data = z.object({
+      name: z.string().min(1),
+      email: z.string().email(),
+      password: z.string().min(8),
+      role: z.enum(["instructor", "student"]).optional().default("student"),
+    }).parse(req.body);
+
+    const existing = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, data.email)).limit(1);
+    if (existing.length > 0) {
+      res.status(409).json({ error: "Conflict", message: "Email already in use" });
+      return;
+    }
+
+    const passwordHash = await hashPassword(data.password);
+    const [user] = await db.insert(usersTable).values({ name: data.name, email: data.email, passwordHash, role: data.role }).returning();
+    res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, createdAt: user.createdAt });
+  } catch (err) {
+    req.log.error({ err }, "Create user error");
     res.status(500).json({ error: "InternalError" });
   }
 });
@@ -96,7 +120,12 @@ router.patch("/:userId", requireAuth, async (req: AuthenticatedRequest, res) => 
     if (req.user!.role === "student" && req.user!.userId !== userId) {
       res.status(403).json({ error: "Forbidden" }); return;
     }
-    const data = z.object({ name: z.string().optional(), email: z.string().email().optional(), role: z.enum(["owner", "instructor", "student"]).optional(), avatarUrl: z.string().optional() }).parse(req.body);
+    const data = z.object({
+      name: z.string().optional(),
+      email: z.string().email().optional(),
+      role: z.enum(["owner", "instructor", "student"]).optional(),
+      avatarUrl: z.string().optional(),
+    }).parse(req.body);
 
     if (data.role && req.user!.role !== "owner") {
       res.status(403).json({ error: "Forbidden", message: "Only owners can change roles" }); return;
