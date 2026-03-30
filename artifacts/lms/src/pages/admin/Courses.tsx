@@ -63,22 +63,36 @@ export default function AdminCourses() {
   };
 
   const handlePublish = async (courseId: string) => {
+    const listKey = getListCoursesQueryKey();
+    const prev = queryClient.getQueryData(listKey);
+    queryClient.setQueryData(listKey, (old: { data?: { id: string; status: string }[] } | undefined) =>
+      old ? { ...old, data: old.data?.map(c => c.id === courseId ? { ...c, status: "published" } : c) } : old
+    );
     try {
       await publishMutation.mutateAsync({ courseId });
       toast.success("Course published");
-      invalidate();
     } catch {
+      queryClient.setQueryData(listKey, prev);
       toast.error("Failed to publish");
+    } finally {
+      invalidate();
     }
   };
 
   const handleUnpublish = async (courseId: string) => {
+    const listKey = getListCoursesQueryKey();
+    const prev = queryClient.getQueryData(listKey);
+    queryClient.setQueryData(listKey, (old: { data?: { id: string; status: string }[] } | undefined) =>
+      old ? { ...old, data: old.data?.map(c => c.id === courseId ? { ...c, status: "draft" } : c) } : old
+    );
     try {
       await unpublishMutation.mutateAsync({ courseId });
       toast.success("Course set to draft");
-      invalidate();
     } catch {
+      queryClient.setQueryData(listKey, prev);
       toast.error("Failed to unpublish");
+    } finally {
+      invalidate();
     }
   };
 

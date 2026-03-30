@@ -230,22 +230,32 @@ export default function CourseDetail() {
   };
 
   const handlePublish = async () => {
+    const courseKey = getGetCourseQueryKey(id);
+    const prev = queryClient.getQueryData<typeof course>(courseKey);
+    queryClient.setQueryData(courseKey, (old: typeof course) => old ? { ...old, status: "published" } : old);
     try {
       await publishCourse.mutateAsync({ courseId: id });
       toast.success("Course published!");
-      invalidateCourse();
     } catch {
+      queryClient.setQueryData(courseKey, prev);
       toast.error("Failed to publish");
+    } finally {
+      invalidateCourse();
     }
   };
 
   const handleUnpublish = async () => {
+    const courseKey = getGetCourseQueryKey(id);
+    const prev = queryClient.getQueryData<typeof course>(courseKey);
+    queryClient.setQueryData(courseKey, (old: typeof course) => old ? { ...old, status: "draft" } : old);
     try {
       await unpublishCourse.mutateAsync({ courseId: id });
       toast.success("Course moved to draft");
-      invalidateCourse();
     } catch {
+      queryClient.setQueryData(courseKey, prev);
       toast.error("Failed to unpublish");
+    } finally {
+      invalidateCourse();
     }
   };
 
