@@ -18,6 +18,7 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminCourses from "@/pages/admin/Courses";
 import AdminCourseDetail from "@/pages/admin/CourseDetail";
 import AdminUsers from "@/pages/admin/Users";
+import ComingSoon from "@/pages/admin/ComingSoon";
 
 // Student Pages
 import MyLearning from "@/pages/student/MyLearning";
@@ -55,6 +56,21 @@ function Router() {
       <Route path="/admin/courses" component={AdminCourses} />
       <Route path="/admin/courses/:id" component={AdminCourseDetail} />
       <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/admin/enrollments">
+        {() => <ComingSoon title="Enrollments" description="View and manage all student enrollments across courses." />}
+      </Route>
+      <Route path="/admin/orders">
+        {() => <ComingSoon title="Orders" description="Track purchases, payments, and revenue from course orders." />}
+      </Route>
+      <Route path="/admin/live-sessions">
+        {() => <ComingSoon title="Live Sessions" description="Schedule and manage upcoming Zoom live sessions." />}
+      </Route>
+      <Route path="/admin/community">
+        {() => <ComingSoon title="Community" description="Moderate community posts, discussions, and announcements." />}
+      </Route>
+      <Route path="/admin/affiliates">
+        {() => <ComingSoon title="Affiliates" description="Manage affiliate partners, referrals, and commission tracking." />}
+      </Route>
       
       {/* Fallback */}
       <Route component={NotFound} />
