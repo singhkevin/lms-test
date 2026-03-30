@@ -1,6 +1,7 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import { z } from "zod/v4";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -30,5 +31,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof z.ZodError) {
+    res.status(400).json({ error: "ValidationError", message: err.message });
+    return;
+  }
+  logger.error({ err }, "Unhandled error");
+  res.status(500).json({ error: "InternalError" });
+});
 
 export default app;

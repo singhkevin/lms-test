@@ -57,6 +57,7 @@ router.post("/", requireAuth, requireRole("owner"), async (req: AuthenticatedReq
     const [user] = await db.insert(usersTable).values({ name: data.name, email: data.email, passwordHash, role: data.role }).returning();
     res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role, avatarUrl: user.avatarUrl, createdAt: user.createdAt });
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Create user error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -136,6 +137,7 @@ router.patch("/:userId", requireAuth, async (req: AuthenticatedRequest, res) => 
 
     res.json({ id: updated.id, name: updated.name, email: updated.email, role: updated.role, avatarUrl: updated.avatarUrl, createdAt: updated.createdAt });
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Update user error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -162,6 +164,7 @@ router.patch("/:userId/password", requireAuth, async (req: AuthenticatedRequest,
     await db.update(usersTable).set({ passwordHash, updatedAt: new Date() }).where(eq(usersTable.id, userId));
     res.json({ message: "Password updated" });
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Change password error");
     res.status(500).json({ error: "InternalError" });
   }

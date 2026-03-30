@@ -108,6 +108,7 @@ router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: Au
 
     res.status(201).json(formatCourse({ ...course, instructorName: instructor?.name }, 0));
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Create course error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -163,6 +164,7 @@ router.patch("/:courseId", requireAuth, requireRole("owner", "instructor"), asyn
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
     res.json(formatCourse({ ...updated, instructorName: instructor?.name }, 0));
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Update course error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -232,6 +234,7 @@ router.post("/:courseId/sections", requireAuth, requireRole("owner", "instructor
     const [section] = await db.insert(sectionsTable).values({ ...data, courseId: req.params["courseId"]!, order: data.order ?? 0 }).returning();
     res.status(201).json(section);
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Create section error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -305,6 +308,7 @@ router.post("/:courseId/sections/:sectionId/lessons", requireAuth, requireRole("
     const [lesson] = await db.insert(lessonsTable).values({ ...data, sectionId: req.params["sectionId"]!, order: data.order ?? 0, isFree: data.isFree ?? false }).returning();
     res.status(201).json(lesson);
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Create lesson error");
     res.status(500).json({ error: "InternalError" });
   }
@@ -346,6 +350,7 @@ router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, re
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     res.json(updated);
   } catch (err) {
+    if (err instanceof z.ZodError) { res.status(400).json({ error: "ValidationError", message: err.message }); return; }
     req.log.error({ err }, "Update lesson error");
     res.status(500).json({ error: "InternalError" });
   }
