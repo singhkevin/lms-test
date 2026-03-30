@@ -140,6 +140,10 @@ router.get("/:courseId", requireAuth, async (req: AuthenticatedRequest, res) => 
 
 router.patch("/:courseId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
+
     const data = z.object({
       title: z.string().optional(),
       description: z.string().optional(),
@@ -176,6 +180,9 @@ router.delete("/:courseId", requireAuth, requireRole("owner"), async (req: Authe
 
 router.post("/:courseId/publish", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const [updated] = await db.update(coursesTable).set({ status: "published", updatedAt: new Date() }).where(eq(coursesTable.id, req.params["courseId"]!)).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
@@ -188,6 +195,9 @@ router.post("/:courseId/publish", requireAuth, requireRole("owner", "instructor"
 
 router.post("/:courseId/unpublish", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const [updated] = await db.update(coursesTable).set({ status: "draft", updatedAt: new Date() }).where(eq(coursesTable.id, req.params["courseId"]!)).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
     const [instructor] = await db.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, updated.instructorId)).limit(1);
@@ -215,6 +225,9 @@ router.get("/:courseId/sections", requireAuth, async (req: AuthenticatedRequest,
 
 router.post("/:courseId/sections", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const data = z.object({ title: z.string().min(1), order: z.number().optional() }).parse(req.body);
     const [section] = await db.insert(sectionsTable).values({ ...data, courseId: req.params["courseId"]!, order: data.order ?? 0 }).returning();
     res.status(201).json(section);
@@ -226,6 +239,9 @@ router.post("/:courseId/sections", requireAuth, requireRole("owner", "instructor
 
 router.patch("/:courseId/sections/:sectionId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const data = z.object({ title: z.string().optional(), order: z.number().optional() }).parse(req.body);
     const [updated] = await db.update(sectionsTable).set(data).where(and(eq(sectionsTable.id, req.params["sectionId"]!), eq(sectionsTable.courseId, req.params["courseId"]!))).returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
@@ -238,6 +254,9 @@ router.patch("/:courseId/sections/:sectionId", requireAuth, requireRole("owner",
 
 router.delete("/:courseId/sections/:sectionId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     await db.delete(sectionsTable).where(and(eq(sectionsTable.id, req.params["sectionId"]!), eq(sectionsTable.courseId, req.params["courseId"]!)));
     res.json({ message: "Section deleted" });
   } catch (err) {
@@ -245,6 +264,13 @@ router.delete("/:courseId/sections/:sectionId", requireAuth, requireRole("owner"
     res.status(500).json({ error: "InternalError" });
   }
 });
+
+async function assertCourseOwnership(courseId: string, user: { userId: string; role: string }): Promise<"ok" | "forbidden" | "notfound"> {
+  if (user.role === "owner") return "ok";
+  const [course] = await db.select({ instructorId: coursesTable.instructorId }).from(coursesTable).where(eq(coursesTable.id, courseId)).limit(1);
+  if (!course) return "notfound";
+  return course.instructorId === user.userId ? "ok" : "forbidden";
+}
 
 function isValidLoomUrl(url: string | undefined): boolean {
   if (!url) return true;
@@ -257,6 +283,9 @@ function isValidLoomUrl(url: string | undefined): boolean {
 // LESSONS
 router.post("/:courseId/sections/:sectionId/lessons", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const data = z.object({
       title: z.string().min(1),
       type: z.enum(["video", "text", "quiz", "live"]).optional().default("text"),
@@ -294,6 +323,9 @@ router.get("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, asyn
 
 router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     const data = z.object({
       title: z.string().optional(),
       type: z.enum(["video", "text", "quiz", "live"]).optional(),
@@ -321,6 +353,9 @@ router.patch("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, re
 
 router.delete("/:courseId/sections/:sectionId/lessons/:lessonId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
+    const ownership = await assertCourseOwnership(req.params["courseId"]!, req.user!);
+    if (ownership === "notfound") { res.status(404).json({ error: "NotFound" }); return; }
+    if (ownership === "forbidden") { res.status(403).json({ error: "Forbidden", message: "You do not own this course" }); return; }
     await db.delete(lessonsTable).where(and(eq(lessonsTable.id, req.params["lessonId"]!), eq(lessonsTable.sectionId, req.params["sectionId"]!)));
     res.json({ message: "Lesson deleted" });
   } catch (err) {
