@@ -10,6 +10,7 @@ import liveSessionsRouter from "./live-sessions.js";
 import communityRouter from "./community.js";
 import analyticsRouter from "./analytics.js";
 import affiliatesRouter from "./affiliates.js";
+import siteSettingsRouter from "./site-settings.js";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/live-sessions", liveSessionsRouter);
 router.use("/community", communityRouter);
 router.use("/analytics", analyticsRouter);
 router.use("/affiliates", affiliatesRouter);
+router.use("/site-settings", siteSettingsRouter);
 
 export default router;

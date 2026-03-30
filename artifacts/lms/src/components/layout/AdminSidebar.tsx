@@ -7,7 +7,8 @@ import {
   CreditCard, 
   Video, 
   MessageSquare, 
-  Link as LinkIcon 
+  Link as LinkIcon,
+  Settings
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -28,6 +29,7 @@ export function AdminSidebar() {
     { name: "Live Sessions", href: "/admin/live-sessions", icon: Video },
     { name: "Community", href: "/admin/community", icon: MessageSquare },
     { name: "Affiliates", href: "/admin/affiliates", icon: LinkIcon },
+    { name: "Site Settings", href: "/admin/site-settings", icon: Settings },
   ];
 
   return (

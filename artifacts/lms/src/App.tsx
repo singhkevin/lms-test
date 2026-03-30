@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
+import { SiteSettingsProvider } from "@/lib/siteSettings";
 import NotFound from "@/pages/not-found";
 
 // Pages
@@ -18,6 +19,7 @@ import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminCourses from "@/pages/admin/Courses";
 import AdminCourseDetail from "@/pages/admin/CourseDetail";
 import AdminUsers from "@/pages/admin/Users";
+import AdminSiteSettings from "@/pages/admin/SiteSettings";
 import ComingSoon from "@/pages/admin/ComingSoon";
 
 // Student Pages
@@ -71,6 +73,7 @@ function Router() {
       <Route path="/admin/affiliates">
         {() => <ComingSoon title="Affiliates" description="Manage affiliate partners, referrals, and commission tracking." />}
       </Route>
+      <Route path="/admin/site-settings" component={AdminSiteSettings} />
       
       {/* Fallback */}
       <Route component={NotFound} />
@@ -83,9 +86,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AuthProvider>
-            <Router />
-          </AuthProvider>
+          <SiteSettingsProvider>
+            <AuthProvider>
+              <Router />
+            </AuthProvider>
+          </SiteSettingsProvider>
         </WouterRouter>
         <Toaster position="top-center" richColors />
       </TooltipProvider>

@@ -10,45 +10,56 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { BookOpen, LogOut, Settings, LayoutDashboard, User } from "lucide-react";
+import { BookOpen, LogOut, LayoutDashboard, User } from "lucide-react";
+import { useSiteSettings } from "@/lib/siteSettings";
 
 export function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const { siteTitle, logoUrl } = useSiteSettings();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2 transition-opacity hover:opacity-80">
-            <div className="bg-primary/10 p-2 rounded-xl">
-              <BookOpen className="h-6 w-6 text-primary" />
-            </div>
-            <span className="font-display font-bold text-xl tracking-tight text-foreground">LMS Academy</span>
+            {logoUrl ? (
+              <img src={logoUrl} alt={siteTitle} className="h-8 max-w-[140px] object-contain" />
+            ) : (
+              <>
+                <div className="bg-primary/10 p-2 rounded-xl">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                </div>
+                <span className="font-display font-bold text-xl tracking-tight text-foreground">{siteTitle}</span>
+              </>
+            )}
           </Link>
           
-          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-            <Link href="/" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-              Catalog
-            </Link>
-            {isAuthenticated && user?.role === 'student' && (
-              <Link href="/my-learning" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-                My Learning
+          {isAuthenticated && (
+            <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+              <Link href="/courses" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                Courses
               </Link>
-            )}
-            <Link href="/community" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
-              Community
-            </Link>
-          </nav>
+              {user?.role === 'student' && (
+                <Link href="/my-learning" className="px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors">
+                  My Learning
+                </Link>
+              )}
+            </nav>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
           {!isAuthenticated ? (
             <>
-              <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-4 py-2">
-                Sign In
+              <Link href="/login">
+                <Button variant="ghost" className="text-sm font-medium">
+                  Sign In
+                </Button>
               </Link>
-              <Link href="/register" className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground h-10 px-5 py-2 items-center justify-center rounded-xl font-medium transition-colors shadow-sm shadow-primary/20 hover:shadow-md hover:-translate-y-0.5 duration-200">
-                Get Started
+              <Link href="/register">
+                <Button className="hidden sm:inline-flex rounded-xl shadow-sm shadow-primary/20 hover:shadow-md hover:-translate-y-0.5 duration-200">
+                  Get Started
+                </Button>
               </Link>
             </>
           ) : (
@@ -67,9 +78,7 @@ export function Navbar() {
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user?.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
