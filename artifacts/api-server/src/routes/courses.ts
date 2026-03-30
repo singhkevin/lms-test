@@ -58,7 +58,8 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
     const status = req.query["status"] as string | undefined;
     const offset = (page - 1) * limit;
 
-    const conditions: ReturnType<typeof eq>[] = [];
+    const conditions: ReturnType<typeof eq | typeof ilike>[] = [];
+    if (search) conditions.push(ilike(coursesTable.title, `%${search}%`));
     if (status) conditions.push(eq(coursesTable.status, status as "draft" | "published" | "archived"));
     if (req.user!.role === "instructor") conditions.push(eq(coursesTable.instructorId, req.user!.userId));
 
