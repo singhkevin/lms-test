@@ -142,6 +142,14 @@ export interface UserDetail {
   orders: Order[];
 }
 
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  /** @minLength 8 */
+  password: string;
+  role?: UserRole;
+}
+
 export interface UpdateUserRequest {
   name?: string;
   email?: string;
@@ -156,27 +164,18 @@ export interface UserListResponse {
   limit: number;
 }
 
-export type CourseType = typeof CourseType[keyof typeof CourseType];
-
-export const CourseType = {
-  recorded: "recorded",
-  live: "live",
-} as const;
-
 export interface Course {
   id: string;
   title: string;
   slug: string;
   description?: string | null;
-  longDescription?: string | null;
-  courseType: CourseType;
   thumbnailUrl?: string | null;
   price?: number | null;
+  paymentLink?: string | null;
   status: CourseStatus;
   instructorId: string;
   instructorName?: string | null;
   enrollmentCount: number;
-  moduleCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -188,9 +187,6 @@ export interface Lesson {
   type: LessonType;
   content?: string | null;
   videoUrl?: string | null;
-  pdfUrl?: string | null;
-  zoomMeetingUrl?: string | null;
-  zoomPassword?: string | null;
   durationMinutes?: number | null;
   order: number;
   isFree: boolean;
@@ -211,10 +207,9 @@ export interface CourseDetail {
   title: string;
   slug: string;
   description?: string | null;
-  longDescription?: string | null;
-  courseType: CourseType;
   thumbnailUrl?: string | null;
   price?: number | null;
+  paymentLink?: string | null;
   status: CourseStatus;
   instructorId: string;
   instructorName?: string | null;
@@ -234,8 +229,6 @@ export interface CourseListResponse {
 export interface CreateCourseRequest {
   title: string;
   description?: string;
-  longDescription?: string;
-  courseType?: CourseType;
   thumbnailUrl?: string;
   price?: number;
 }
@@ -243,10 +236,9 @@ export interface CreateCourseRequest {
 export interface UpdateCourseRequest {
   title?: string;
   description?: string;
-  longDescription?: string;
-  courseType?: CourseType;
   thumbnailUrl?: string;
   price?: number;
+  paymentLink?: string | null;
   status?: CourseStatus;
 }
 
@@ -273,9 +265,6 @@ export interface CreateLessonRequest {
   type: LessonType;
   content?: string;
   videoUrl?: string;
-  pdfUrl?: string;
-  zoomMeetingUrl?: string;
-  zoomPassword?: string;
   durationMinutes?: number;
   order?: number;
   isFree?: boolean;
@@ -286,19 +275,9 @@ export interface UpdateLessonRequest {
   type?: LessonType;
   content?: string;
   videoUrl?: string;
-  pdfUrl?: string;
-  zoomMeetingUrl?: string;
-  zoomPassword?: string;
   durationMinutes?: number;
   order?: number;
   isFree?: boolean;
-}
-
-export interface CreateUserRequest {
-  name: string;
-  email: string;
-  password: string;
-  role?: UserRole;
 }
 
 export interface EnrollmentListResponse {

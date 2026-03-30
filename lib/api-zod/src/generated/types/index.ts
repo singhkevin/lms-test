@@ -24,6 +24,7 @@ export * from "./createLessonRequest";
 export * from "./createLiveSessionRequest";
 export * from "./createOrderRequest";
 export * from "./createSectionRequest";
+export * from "./createUserRequest";
 export * from "./enrollment";
 export * from "./enrollmentListResponse";
 export * from "./enrollmentStatus";

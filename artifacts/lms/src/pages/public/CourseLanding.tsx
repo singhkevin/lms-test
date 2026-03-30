@@ -37,7 +37,6 @@ export default function CourseLanding() {
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryForm, setEnquiryForm] = useState<EnquiryForm>(defaultForm);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   // Check if this student is enrolled
   const { data: enrollments } = useQuery({
@@ -54,7 +53,7 @@ export default function CourseLanding() {
   });
 
   const isEnrolled = (enrollments?.data?.length ?? 0) > 0;
-  const coursePaymentLink = (course as any)?.paymentLink as string | null | undefined;
+  const coursePaymentLink = course?.paymentLink;
   const isPaid = course && course.price && Number(course.price) > 0;
 
   const handleCTAClick = () => {
@@ -99,7 +98,9 @@ export default function CourseLanding() {
         }),
       });
       if (!res.ok) throw new Error("Failed");
-      setSubmitted(true);
+      toast.success("Enquiry submitted! Our team will reach out to you shortly.");
+      setEnquiryOpen(false);
+      setEnquiryForm(defaultForm);
     } catch {
       toast.error("Failed to submit enquiry. Please try again.");
     } finally {
@@ -143,9 +144,15 @@ export default function CourseLanding() {
                 <div className="text-4xl font-bold mb-2">
                   {isPaid ? `₹${Number(course.price).toLocaleString("en-IN")}` : "Free"}
                 </div>
-                <p className="text-white/60 text-sm">
-                  {isEnrolled ? "You are enrolled" : isPaid ? "One-time payment" : "Full lifetime access"}
-                </p>
+                {isEnrolled ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-sm font-medium">
+                    <Check className="w-3.5 h-3.5" /> Already Enrolled
+                  </div>
+                ) : (
+                  <p className="text-white/60 text-sm">
+                    {isPaid ? "One-time payment" : "Full lifetime access"}
+                  </p>
+                )}
               </div>
               <div className="space-y-4">
                 <Button
@@ -206,100 +213,86 @@ export default function CourseLanding() {
       </div>
 
       {/* Enquiry Dialog */}
-      <Dialog open={enquiryOpen} onOpenChange={open => { if (!open) { setEnquiryOpen(false); setSubmitted(false); setEnquiryForm(defaultForm); } }}>
+      <Dialog open={enquiryOpen} onOpenChange={open => { if (!open) { setEnquiryOpen(false); setEnquiryForm(defaultForm); } }}>
         <DialogContent className="rounded-2xl sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{submitted ? "Enquiry Received!" : `Enquire about ${course.title}`}</DialogTitle>
+            <DialogTitle>Enquire about {course.title}</DialogTitle>
           </DialogHeader>
 
-          {submitted ? (
-            <div className="py-8 text-center space-y-4">
-              <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto">
-                <Check className="h-8 w-8 text-emerald-500" />
+          <div className="space-y-4 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>First Name <span className="text-destructive">*</span></Label>
+                <Input
+                  value={enquiryForm.firstName}
+                  onChange={e => setEnquiryForm(f => ({ ...f, firstName: e.target.value }))}
+                  placeholder="Arjun"
+                  className="rounded-xl"
+                />
               </div>
-              <p className="text-muted-foreground">
-                Thank you! We've received your enquiry and will reach out to you shortly to complete your enrolment.
-              </p>
-              <Button className="rounded-xl" onClick={() => { setEnquiryOpen(false); setSubmitted(false); setEnquiryForm(defaultForm); }}>
-                Close
+              <div className="space-y-1.5">
+                <Label>Last Name <span className="text-destructive">*</span></Label>
+                <Input
+                  value={enquiryForm.lastName}
+                  onChange={e => setEnquiryForm(f => ({ ...f, lastName: e.target.value }))}
+                  placeholder="Sharma"
+                  className="rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Email <span className="text-destructive">*</span></Label>
+              <Input
+                type="email"
+                value={enquiryForm.email}
+                onChange={e => setEnquiryForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="arjun@example.com"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Phone <span className="text-destructive">*</span></Label>
+              <Input
+                type="tel"
+                value={enquiryForm.phone}
+                onChange={e => setEnquiryForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="+91 98765 43210"
+                className="rounded-xl"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Age <span className="text-destructive">*</span></Label>
+                <Input
+                  type="number"
+                  min="10"
+                  max="100"
+                  value={enquiryForm.age}
+                  onChange={e => setEnquiryForm(f => ({ ...f, age: e.target.value }))}
+                  placeholder="25"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>UPSC Attempts <span className="text-destructive">*</span></Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={enquiryForm.upscAttempts}
+                  onChange={e => setEnquiryForm(f => ({ ...f, upscAttempts: e.target.value }))}
+                  placeholder="0"
+                  className="rounded-xl"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" className="rounded-xl" onClick={() => setEnquiryOpen(false)}>Cancel</Button>
+              <Button className="rounded-xl" onClick={handleSubmitEnquiry} disabled={submitting}>
+                {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</> : "Submit Enquiry"}
               </Button>
             </div>
-          ) : (
-            <div className="space-y-4 mt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>First Name <span className="text-destructive">*</span></Label>
-                  <Input
-                    value={enquiryForm.firstName}
-                    onChange={e => setEnquiryForm(f => ({ ...f, firstName: e.target.value }))}
-                    placeholder="Arjun"
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Last Name <span className="text-destructive">*</span></Label>
-                  <Input
-                    value={enquiryForm.lastName}
-                    onChange={e => setEnquiryForm(f => ({ ...f, lastName: e.target.value }))}
-                    placeholder="Sharma"
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Email <span className="text-destructive">*</span></Label>
-                <Input
-                  type="email"
-                  value={enquiryForm.email}
-                  onChange={e => setEnquiryForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="arjun@example.com"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Phone <span className="text-destructive">*</span></Label>
-                <Input
-                  type="tel"
-                  value={enquiryForm.phone}
-                  onChange={e => setEnquiryForm(f => ({ ...f, phone: e.target.value }))}
-                  placeholder="+91 98765 43210"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Age <span className="text-destructive">*</span></Label>
-                  <Input
-                    type="number"
-                    min="10"
-                    max="100"
-                    value={enquiryForm.age}
-                    onChange={e => setEnquiryForm(f => ({ ...f, age: e.target.value }))}
-                    placeholder="25"
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>UPSC Attempts <span className="text-destructive">*</span></Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="20"
-                    value={enquiryForm.upscAttempts}
-                    onChange={e => setEnquiryForm(f => ({ ...f, upscAttempts: e.target.value }))}
-                    placeholder="0"
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" className="rounded-xl" onClick={() => setEnquiryOpen(false)}>Cancel</Button>
-                <Button className="rounded-xl" onClick={handleSubmitEnquiry} disabled={submitting}>
-                  {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Submitting...</> : "Submit Enquiry"}
-                </Button>
-              </div>
-            </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
     </MainLayout>

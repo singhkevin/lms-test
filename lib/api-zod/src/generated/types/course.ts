@@ -14,6 +14,7 @@ export interface Course {
   description?: string | null;
   thumbnailUrl?: string | null;
   price?: number | null;
+  paymentLink?: string | null;
   status: CourseStatus;
   instructorId: string;
   instructorName?: string | null;

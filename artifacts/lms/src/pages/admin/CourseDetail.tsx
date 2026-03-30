@@ -94,7 +94,7 @@ export default function CourseDetail() {
   const [savingPaymentLink, setSavingPaymentLink] = useState(false);
 
   useEffect(() => {
-    if (course) setPaymentLink((course as any).paymentLink ?? "");
+    if (course) setPaymentLink(course.paymentLink ?? "");
   }, [course?.id]);
 
   const handleSavePaymentLink = async () => {

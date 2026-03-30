@@ -99,6 +99,18 @@ export const GoogleOAuthCallbackQueryParams = zod.object({
 });
 
 /**
+ * @summary Create a new user (owner only)
+ */
+export const createUserBodyPasswordMin = 8;
+
+export const CreateUserBody = zod.object({
+  name: zod.string(),
+  email: zod.string(),
+  password: zod.string().min(createUserBodyPasswordMin),
+  role: zod.enum(["owner", "instructor", "student"]).optional(),
+});
+
+/**
  * @summary List all users (admin/owner only)
  */
 export const listUsersQueryPageDefault = 1;
@@ -246,6 +258,7 @@ export const ListCoursesResponse = zod.object({
       description: zod.string().nullish(),
       thumbnailUrl: zod.string().nullish(),
       price: zod.number().nullish(),
+      paymentLink: zod.string().nullish(),
       status: zod.enum(["draft", "published", "archived"]),
       instructorId: zod.string(),
       instructorName: zod.string().nullish(),
@@ -289,6 +302,7 @@ export const GetCourseCatalogResponse = zod.object({
       description: zod.string().nullish(),
       thumbnailUrl: zod.string().nullish(),
       price: zod.number().nullish(),
+      paymentLink: zod.string().nullish(),
       status: zod.enum(["draft", "published", "archived"]),
       instructorId: zod.string(),
       instructorName: zod.string().nullish(),
@@ -316,6 +330,7 @@ export const GetCourseResponse = zod.object({
   description: zod.string().nullish(),
   thumbnailUrl: zod.string().nullish(),
   price: zod.number().nullish(),
+  paymentLink: zod.string().nullish(),
   status: zod.enum(["draft", "published", "archived"]),
   instructorId: zod.string(),
   instructorName: zod.string().nullish(),
@@ -359,6 +374,7 @@ export const UpdateCourseBody = zod.object({
   description: zod.string().optional(),
   thumbnailUrl: zod.string().optional(),
   price: zod.number().optional(),
+  paymentLink: zod.string().nullish(),
   status: zod.enum(["draft", "published", "archived"]).optional(),
 });
 
@@ -369,6 +385,7 @@ export const UpdateCourseResponse = zod.object({
   description: zod.string().nullish(),
   thumbnailUrl: zod.string().nullish(),
   price: zod.number().nullish(),
+  paymentLink: zod.string().nullish(),
   status: zod.enum(["draft", "published", "archived"]),
   instructorId: zod.string(),
   instructorName: zod.string().nullish(),
@@ -402,6 +419,30 @@ export const PublishCourseResponse = zod.object({
   description: zod.string().nullish(),
   thumbnailUrl: zod.string().nullish(),
   price: zod.number().nullish(),
+  paymentLink: zod.string().nullish(),
+  status: zod.enum(["draft", "published", "archived"]),
+  instructorId: zod.string(),
+  instructorName: zod.string().nullish(),
+  enrollmentCount: zod.number(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Unpublish a course (move to draft)
+ */
+export const UnpublishCourseParams = zod.object({
+  courseId: zod.coerce.string(),
+});
+
+export const UnpublishCourseResponse = zod.object({
+  id: zod.string(),
+  title: zod.string(),
+  slug: zod.string(),
+  description: zod.string().nullish(),
+  thumbnailUrl: zod.string().nullish(),
+  price: zod.number().nullish(),
+  paymentLink: zod.string().nullish(),
   status: zod.enum(["draft", "published", "archived"]),
   instructorId: zod.string(),
   instructorName: zod.string().nullish(),

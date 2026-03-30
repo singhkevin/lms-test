@@ -217,6 +217,25 @@ paths:
 
   # USERS
   /users:
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user (owner only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: Created user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
     get:
       operationId: listUsers
       tags: [users]
@@ -518,6 +537,27 @@ paths:
       responses:
         "200":
           description: Published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{courseId}/unpublish:
+    post:
+      operationId: unpublishCourse
+      tags: [courses]
+      summary: Unpublish a course (move to draft)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unpublished
           content:
             application/json:
               schema:
@@ -1435,6 +1475,20 @@ components:
             $ref: "#/components/schemas/Order"
       required: [id, name, email, role, createdAt, enrollments, orders]
 
+    CreateUserRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+          minLength: 8
+        role:
+          $ref: "#/components/schemas/UserRole"
+
     UpdateUserRequest:
       type: object
       properties:
@@ -1481,6 +1535,9 @@ components:
         price:
           type: number
           nullable: true
+        paymentLink:
+          type: string
+          nullable: true
         status:
           $ref: "#/components/schemas/CourseStatus"
         instructorId:
@@ -1515,6 +1572,9 @@ components:
           nullable: true
         price:
           type: number
+          nullable: true
+        paymentLink:
+          type: string
           nullable: true
         status:
           $ref: "#/components/schemas/CourseStatus"
@@ -1576,6 +1636,9 @@ components:
           type: string
         price:
           type: number
+        paymentLink:
+          type: string
+          nullable: true
         status:
           $ref: "#/components/schemas/CourseStatus"
 

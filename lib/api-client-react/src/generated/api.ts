@@ -34,6 +34,7 @@ import type {
   CreateLiveSessionRequest,
   CreateOrderRequest,
   CreateSectionRequest,
+  CreateUserRequest,
   Enrollment,
   EnrollmentListResponse,
   ErrorResponse,
@@ -817,6 +818,92 @@ export function useGoogleOAuthCallback<
 }
 
 /**
+ * @summary Create a new user (owner only)
+ */
+export const getCreateUserUrl = () => {
+  return `/api/users`;
+};
+
+export const createUser = async (
+  createUserRequest: CreateUserRequest,
+  options?: RequestInit,
+): Promise<UserProfile> => {
+  return customFetch<UserProfile>(getCreateUserUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createUserRequest),
+  });
+};
+
+export const getCreateUserMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createUser>>,
+    TError,
+    { data: BodyType<CreateUserRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createUser>>,
+  TError,
+  { data: BodyType<CreateUserRequest> },
+  TContext
+> => {
+  const mutationKey = ["createUser"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createUser>>,
+    { data: BodyType<CreateUserRequest> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createUser(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateUserMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createUser>>
+>;
+export type CreateUserMutationBody = BodyType<CreateUserRequest>;
+export type CreateUserMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new user (owner only)
+ */
+export const useCreateUser = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createUser>>,
+    TError,
+    { data: BodyType<CreateUserRequest> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createUser>>,
+  TError,
+  { data: BodyType<CreateUserRequest> },
+  TContext
+> => {
+  return useMutation(getCreateUserMutationOptions(options));
+};
+
+/**
  * @summary List all users (admin/owner only)
  */
 export const getListUsersUrl = (params?: ListUsersParams) => {
@@ -1156,80 +1243,6 @@ export const useDeleteUser = <
   TContext
 > => {
   return useMutation(getDeleteUserMutationOptions(options));
-};
-
-/**
- * @summary Create a user (admin only)
- */
-export const getCreateUserUrl = () => {
-  return `/api/users`;
-};
-
-export const createUser = async (
-  createUserRequest: import("./api.schemas").CreateUserRequest,
-  options?: RequestInit,
-): Promise<import("./api.schemas").UserProfile> => {
-  return customFetch<import("./api.schemas").UserProfile>(getCreateUserUrl(), {
-    ...options,
-    method: "POST",
-    headers: { "Content-Type": "application/json", ...options?.headers },
-    body: JSON.stringify(createUserRequest),
-  });
-};
-
-export const getCreateUserMutationOptions = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createUser>>,
-    TError,
-    { data: import("./api.schemas").CreateUserRequest },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createUser>>,
-  TError,
-  { data: import("./api.schemas").CreateUserRequest },
-  TContext
-> => {
-  const mutationKey = ["createUser"];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createUser>>,
-    { data: import("./api.schemas").CreateUserRequest }
-  > = (props) => {
-    const { data } = props ?? {};
-    return createUser(data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export const useCreateUser = <
-  TError = ErrorType<unknown>,
-  TContext = unknown,
->(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createUser>>,
-    TError,
-    { data: import("./api.schemas").CreateUserRequest },
-    TContext
-  >;
-  request?: SecondParameter<typeof customFetch>;
-}): UseMutationResult<
-  Awaited<ReturnType<typeof createUser>>,
-  TError,
-  { data: import("./api.schemas").CreateUserRequest },
-  TContext
-> => {
-  return useMutation(getCreateUserMutationOptions(options));
 };
 
 /**
@@ -1937,7 +1950,7 @@ export const usePublishCourse = <
 };
 
 /**
- * @summary Unpublish a course (set back to draft)
+ * @summary Unpublish a course (move to draft)
  */
 export const getUnpublishCourseUrl = (courseId: string) => {
   return `/api/courses/${courseId}/unpublish`;
@@ -1972,7 +1985,9 @@ export const getUnpublishCourseMutationOptions = <
 > => {
   const mutationKey = ["unpublishCourse"];
   const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && "mutationKey" in options.mutation && options.mutation.mutationKey
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
       ? options
       : { ...options, mutation: { ...options.mutation, mutationKey } }
     : { mutation: { mutationKey }, request: undefined };
@@ -1982,12 +1997,22 @@ export const getUnpublishCourseMutationOptions = <
     { courseId: string }
   > = (props) => {
     const { courseId } = props ?? {};
+
     return unpublishCourse(courseId, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
+export type UnpublishCourseMutationResult = NonNullable<
+  Awaited<ReturnType<typeof unpublishCourse>>
+>;
+
+export type UnpublishCourseMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Unpublish a course (move to draft)
+ */
 export const useUnpublishCourse = <
   TError = ErrorType<unknown>,
   TContext = unknown,

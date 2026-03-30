@@ -12,5 +12,6 @@ export interface UpdateCourseRequest {
   description?: string;
   thumbnailUrl?: string;
   price?: number;
+  paymentLink?: string | null;
   status?: CourseStatus;
 }
