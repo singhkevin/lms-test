@@ -10,10 +10,12 @@ import liveSessionsRouter from "./live-sessions.js";
 import communityRouter from "./community.js";
 import analyticsRouter from "./analytics.js";
 import affiliatesRouter from "./affiliates.js";
+import setupPageRouter from "./setup-page.js";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use("/setup-page", setupPageRouter);
 router.use("/auth", authRouter);
 router.use("/users", usersRouter);
 router.use("/courses", coursesRouter);
