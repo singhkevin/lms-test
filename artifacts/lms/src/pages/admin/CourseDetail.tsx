@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Plus, Video, FileText, Radio, Pencil, Trash2, Globe, Archive, Link as LinkIcon, CreditCard, Save } from "lucide-react";
+import { ArrowLeft, Plus, Video, FileText, Radio, Pencil, Trash2, Globe, Archive, Link as LinkIcon, CreditCard, Save, Eye } from "lucide-react";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -317,7 +317,14 @@ export default function CourseDetail() {
             <h1 className="text-2xl md:text-3xl font-display font-bold">{course.title}</h1>
             {course.description && <p className="text-muted-foreground mt-1 text-sm">{course.description}</p>}
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={() => window.open(`/courses/${course.slug}?preview=1`, "_blank")}
+              className="rounded-xl"
+            >
+              <Eye className="mr-2 h-4 w-4" /> Preview
+            </Button>
             {course.status !== "published" ? (
               <Button
                 onClick={handlePublish}

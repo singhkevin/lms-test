@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, MoreVertical, Edit, Globe, Archive, BookOpen, Video, Radio } from "lucide-react";
+import { Plus, Search, MoreVertical, Edit, Globe, Archive, BookOpen, Video, Radio, Eye } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -284,6 +284,13 @@ export default function AdminCourses() {
                           <Edit className="mr-2 h-4 w-4" /> Edit Content
                         </DropdownMenuItem>
                       </Link>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => window.open(`/courses/${course.slug}?preview=1`, "_blank")}
+                      >
+                        <Eye className="mr-2 h-4 w-4" /> Preview Page
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
                       {course.status !== "published" ? (
                         <DropdownMenuItem onClick={() => handlePublish(course.id)} className="cursor-pointer text-emerald-600 focus:text-emerald-600">
                           <Globe className="mr-2 h-4 w-4" /> Publish

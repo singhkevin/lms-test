@@ -1,9 +1,9 @@
-import { useParams, Link, useLocation } from "wouter";
+import { useParams, Link, useLocation, useSearch } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { useGetCourse, useListSections } from "@workspace/api-client-react";
+import { useGetCourse, useListSections, usePublishCourse } from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { Check, PlayCircle, Users, BookOpen, ArrowRight, Loader2 } from "lucide-react";
+import { Check, PlayCircle, Users, BookOpen, ArrowRight, Loader2, Eye, ArrowLeft, Globe } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -29,10 +29,13 @@ const defaultForm: EnquiryForm = {
 
 export default function CourseLanding() {
   const { slug } = useParams<{ slug: string }>();
+  const search = useSearch();
+  const isPreview = new URLSearchParams(search).get("preview") === "1";
   const { data: course, isLoading } = useGetCourse(slug);
   const { data: sections } = useListSections(slug);
   const { isAuthenticated, user } = useAuth();
   const [, navigate] = useLocation();
+  const publishMutation = usePublishCourse();
 
   const [enquiryOpen, setEnquiryOpen] = useState(false);
   const [enquiryForm, setEnquiryForm] = useState<EnquiryForm>(defaultForm);
@@ -115,11 +118,56 @@ export default function CourseLanding() {
     return "Request Enrolment";
   };
 
+  const handlePublishFromPreview = async () => {
+    if (!course) return;
+    try {
+      await publishMutation.mutateAsync({ courseId: course.id });
+      toast.success("Course published successfully!");
+    } catch {
+      toast.error("Failed to publish course");
+    }
+  };
+
   if (isLoading) return <MainLayout><div className="h-screen animate-pulse bg-muted/30" /></MainLayout>;
   if (!course) return <MainLayout><div className="py-20 text-center">Course not found</div></MainLayout>;
 
   return (
     <MainLayout>
+      {/* Preview Mode Banner */}
+      {isPreview && (
+        <div className="sticky top-0 z-50 bg-amber-500 text-amber-950 px-4 py-3 shadow-lg">
+          <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2 font-medium text-sm">
+              <Eye className="h-4 w-4 shrink-0" />
+              <span>Preview Mode — this is how students will see this course page.</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link href={`/admin/courses/${course.id}`}>
+                <Button size="sm" variant="outline" className="rounded-lg border-amber-700 text-amber-950 hover:bg-amber-600 bg-transparent h-8 text-xs">
+                  <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to Editor
+                </Button>
+              </Link>
+              {course.status !== "published" && (
+                <Button
+                  size="sm"
+                  className="rounded-lg h-8 text-xs bg-amber-950 text-amber-50 hover:bg-amber-900"
+                  onClick={handlePublishFromPreview}
+                  disabled={publishMutation.isPending}
+                >
+                  <Globe className="h-3.5 w-3.5 mr-1.5" />
+                  {publishMutation.isPending ? "Publishing..." : "Publish Now"}
+                </Button>
+              )}
+              {course.status === "published" && (
+                <span className="text-xs font-semibold bg-emerald-700 text-white px-2.5 py-1 rounded-lg">
+                  ✓ Published
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="bg-slate-900 text-white py-20 lg:py-28 relative overflow-hidden">
         <div className="absolute inset-0 z-0">

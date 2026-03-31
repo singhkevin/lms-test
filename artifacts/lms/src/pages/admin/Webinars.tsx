@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isPast } from "date-fns";
-import { Plus, MoreVertical, Video, Clock, CalendarDays, ExternalLink, Pencil, Trash2, Link as LinkIcon, Users, Image } from "lucide-react";
+import { Plus, MoreVertical, Video, Clock, CalendarDays, ExternalLink, Pencil, Trash2, Link as LinkIcon, Users, Image, Eye } from "lucide-react";
 
 interface Webinar {
   id: string;
@@ -293,6 +293,12 @@ export default function AdminWebinars() {
                     <DropdownMenuContent align="end" className="w-48 rounded-xl">
                       <DropdownMenuItem onClick={() => openEdit(webinar)} className="cursor-pointer">
                         <Pencil className="mr-2 h-4 w-4" /> Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="cursor-pointer"
+                        onClick={() => window.open(`/webinars/${webinar.id}?preview=1`, "_blank")}
+                      >
+                        <Eye className="mr-2 h-4 w-4" /> Preview Page
                       </DropdownMenuItem>
                       <a href={webinar.zoomUrl} target="_blank" rel="noopener noreferrer">
                         <DropdownMenuItem className="cursor-pointer">

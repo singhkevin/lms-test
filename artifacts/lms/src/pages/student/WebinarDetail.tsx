@@ -1,9 +1,9 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useSearch } from "wouter";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Button } from "@/components/ui/button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarDays, Clock, Users, Video, ArrowLeft, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
+import { CalendarDays, Clock, Users, Video, ArrowLeft, ExternalLink, CheckCircle2, Loader2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -30,6 +30,8 @@ function authHeaders() {
 
 export default function WebinarDetail() {
   const { id } = useParams<{ id: string }>();
+  const search = useSearch();
+  const isPreview = new URLSearchParams(search).get("preview") === "1";
   const queryClient = useQueryClient();
   const [optimisticRsvped, setOptimisticRsvped] = useState<boolean | null>(null);
 
@@ -100,6 +102,23 @@ export default function WebinarDetail() {
 
   return (
     <MainLayout>
+      {/* Preview Mode Banner */}
+      {isPreview && (
+        <div className="sticky top-0 z-50 bg-amber-500 text-amber-950 px-4 py-3 shadow-lg">
+          <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2 font-medium text-sm">
+              <Eye className="h-4 w-4 shrink-0" />
+              <span>Preview Mode — this is how students will see this webinar page.</span>
+            </div>
+            <Link href="/admin/webinars">
+              <Button size="sm" variant="outline" className="rounded-lg border-amber-700 text-amber-950 hover:bg-amber-600 bg-transparent h-8 text-xs">
+                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to Webinars
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="relative bg-slate-900 text-white overflow-hidden">
         {webinar.imageUrl ? (
