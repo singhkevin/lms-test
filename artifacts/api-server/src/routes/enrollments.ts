@@ -25,8 +25,6 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    // For search we need a sub-query join approach: filter after join
-    // We build a joined query and add search condition as ilike on user name or email
     const baseQuery = db.select({
       id: enrollmentsTable.id, userId: enrollmentsTable.userId, courseId: enrollmentsTable.courseId,
       courseName: coursesTable.title, userName: usersTable.name, userEmail: usersTable.email,

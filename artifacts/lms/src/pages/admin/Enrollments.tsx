@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import {
   useListEnrollments, useCreateEnrollment, useRevokeEnrollment, useListCourses, useListUsers,
@@ -207,6 +207,13 @@ export default function AdminEnrollments() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [assignOpen, setAssignOpen] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<Enrollment | null>(null);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    };
+  }, []);
 
   const revokeEnrollment = useRevokeEnrollment();
   const { data: coursesData } = useListCourses({ limit: 200 });
@@ -234,8 +241,8 @@ export default function AdminEnrollments() {
     const val = e.target.value;
     setSearch(val);
     setPage(1);
-    clearTimeout((window as unknown as { _enrollSearchTimer?: number })._enrollSearchTimer);
-    (window as unknown as { _enrollSearchTimer?: number })._enrollSearchTimer = window.setTimeout(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
       setDebouncedSearch(val);
     }, 350);
   }
@@ -244,6 +251,10 @@ export default function AdminEnrollments() {
     setSearch("");
     setDebouncedSearch("");
     setPage(1);
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
   }
 
   function invalidateAll() {

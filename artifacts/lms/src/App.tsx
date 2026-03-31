@@ -20,7 +20,6 @@ import AdminCourses from "@/pages/admin/Courses";
 import AdminCourseDetail from "@/pages/admin/CourseDetail";
 import AdminUsers from "@/pages/admin/Users";
 import AdminSiteSettings from "@/pages/admin/SiteSettings";
-import ComingSoon from "@/pages/admin/ComingSoon";
 import AdminEnrollments from "@/pages/admin/Enrollments";
 import AdminWebinars from "@/pages/admin/Webinars";
 import AdminEnquiries from "@/pages/admin/Enquiries";
