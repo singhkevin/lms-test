@@ -179,7 +179,7 @@ export default function CourseLanding() {
         </div>
         <div className="container mx-auto px-4 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h1 className="text-4xl lg:text-5xl font-display font-bold mb-6 text-balance">{course.title}</h1>
+            <h1 className="text-4xl lg:text-5xl font-display font-bold mb-6 text-balance text-white drop-shadow-md">{course.title}</h1>
             <p className="text-lg text-white/80 mb-8 max-w-xl text-balance">{course.description}</p>
             <div className="flex items-center gap-6 text-sm text-white/70">
               <div className="flex items-center"><Users className="w-4 h-4 mr-2" /> {course.enrollmentCount} enrolled</div>

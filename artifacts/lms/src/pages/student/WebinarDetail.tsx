@@ -162,7 +162,7 @@ export default function WebinarDetail() {
                 )}
               </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6 text-balance leading-tight">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold mb-6 text-balance leading-tight text-white drop-shadow-md">
                 {webinar.title}
               </h1>
 
