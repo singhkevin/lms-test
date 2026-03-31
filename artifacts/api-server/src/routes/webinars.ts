@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { webinarsTable, webinarRsvpsTable, usersTable } from "@workspace/db";
-import { eq, desc, gte, lt, and, sql } from "drizzle-orm";
+import { eq, desc, gte, lt, and, inArray, sql } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthenticatedRequest } from "../lib/auth.js";
 import { z } from "zod";
 
@@ -23,7 +23,7 @@ async function getRsvpCounts(webinarIds: string[]): Promise<Record<string, numbe
   const rows = await db
     .select({ webinarId: webinarRsvpsTable.webinarId, count: sql<number>`count(*)::int` })
     .from(webinarRsvpsTable)
-    .where(sql`${webinarRsvpsTable.webinarId} = ANY(${webinarIds})`)
+    .where(inArray(webinarRsvpsTable.webinarId, webinarIds))
     .groupBy(webinarRsvpsTable.webinarId);
   return Object.fromEntries(rows.map(r => [r.webinarId, r.count]));
 }
@@ -34,7 +34,7 @@ async function getUserRsvps(userId: string, webinarIds: string[]): Promise<Set<s
   const rows = await db
     .select({ webinarId: webinarRsvpsTable.webinarId })
     .from(webinarRsvpsTable)
-    .where(and(eq(webinarRsvpsTable.userId, userId), sql`${webinarRsvpsTable.webinarId} = ANY(${webinarIds})`));
+    .where(and(eq(webinarRsvpsTable.userId, userId), inArray(webinarRsvpsTable.webinarId, webinarIds)));
   return new Set(rows.map(r => r.webinarId));
 }
 
