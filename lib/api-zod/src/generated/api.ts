@@ -160,6 +160,7 @@ export const GetUserResponse = zod.object({
       courseId: zod.string(),
       courseName: zod.string().nullish(),
       userName: zod.string().nullish(),
+      userEmail: zod.string().nullish(),
       status: zod.enum(["active", "revoked", "expired"]),
       enrolledAt: zod.date(),
       expiresAt: zod.date().nullish(),
@@ -657,6 +658,10 @@ export const ListEnrollmentsQueryParams = zod.object({
   userId: zod.coerce.string().optional(),
   courseId: zod.coerce.string().optional(),
   status: zod.enum(["active", "revoked", "expired"]).optional(),
+  search: zod.coerce
+    .string()
+    .optional()
+    .describe("Search by student name or email (case-insensitive substring)"),
 });
 
 export const ListEnrollmentsResponse = zod.object({
@@ -667,6 +672,7 @@ export const ListEnrollmentsResponse = zod.object({
       courseId: zod.string(),
       courseName: zod.string().nullish(),
       userName: zod.string().nullish(),
+      userEmail: zod.string().nullish(),
       status: zod.enum(["active", "revoked", "expired"]),
       enrolledAt: zod.date(),
       expiresAt: zod.date().nullish(),
@@ -699,6 +705,7 @@ export const GetEnrollmentResponse = zod.object({
   courseId: zod.string(),
   courseName: zod.string().nullish(),
   userName: zod.string().nullish(),
+  userEmail: zod.string().nullish(),
   status: zod.enum(["active", "revoked", "expired"]),
   enrolledAt: zod.date(),
   expiresAt: zod.date().nullish(),
@@ -873,6 +880,7 @@ export const MarkOrderPaidResponse = zod.object({
     courseId: zod.string(),
     courseName: zod.string().nullish(),
     userName: zod.string().nullish(),
+    userEmail: zod.string().nullish(),
     status: zod.enum(["active", "revoked", "expired"]),
     enrolledAt: zod.date(),
     expiresAt: zod.date().nullish(),
@@ -1048,6 +1056,7 @@ export const GetAnalyticsSummaryResponse = zod.object({
       courseId: zod.string(),
       courseName: zod.string().nullish(),
       userName: zod.string().nullish(),
+      userEmail: zod.string().nullish(),
       status: zod.enum(["active", "revoked", "expired"]),
       enrolledAt: zod.date(),
       expiresAt: zod.date().nullish(),

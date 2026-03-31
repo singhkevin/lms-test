@@ -117,6 +117,7 @@ export interface Enrollment {
   courseId: string;
   courseName?: string | null;
   userName?: string | null;
+  userEmail?: string | null;
   status: EnrollmentStatus;
   enrolledAt: string;
   expiresAt?: string | null;
@@ -462,6 +463,10 @@ export type ListEnrollmentsParams = {
   userId?: string;
   courseId?: string;
   status?: EnrollmentStatus;
+  /**
+   * Search by student name or email (case-insensitive substring)
+   */
+  search?: string;
 };
 
 export type GetMyProgressParams = {

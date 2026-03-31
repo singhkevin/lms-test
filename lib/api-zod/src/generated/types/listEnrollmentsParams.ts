@@ -13,4 +13,8 @@ export type ListEnrollmentsParams = {
   userId?: string;
   courseId?: string;
   status?: EnrollmentStatus;
+  /**
+   * Search by student name or email (case-insensitive substring)
+   */
+  search?: string;
 };

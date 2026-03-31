@@ -831,6 +831,11 @@ paths:
           in: query
           schema:
             $ref: "#/components/schemas/EnrollmentStatus"
+        - name: search
+          in: query
+          description: Search by student name or email (case-insensitive substring)
+          schema:
+            type: string
       responses:
         "200":
           description: Enrollments list
@@ -1817,6 +1822,9 @@ components:
           type: string
           nullable: true
         userName:
+          type: string
+          nullable: true
+        userEmail:
           type: string
           nullable: true
         status:

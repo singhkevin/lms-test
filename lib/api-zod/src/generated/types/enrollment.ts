@@ -13,6 +13,7 @@ export interface Enrollment {
   courseId: string;
   courseName?: string | null;
   userName?: string | null;
+  userEmail?: string | null;
   status: EnrollmentStatus;
   enrolledAt: Date;
   expiresAt?: Date | null;

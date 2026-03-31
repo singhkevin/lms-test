@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db, enrollmentsTable, coursesTable, usersTable } from "@workspace/db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, or, ilike } from "drizzle-orm";
 import { requireAuth, requireRole, type AuthenticatedRequest } from "../lib/auth.js";
 import { sendEnrollmentConfirmation } from "../lib/email.js";
 import { z } from "zod";
@@ -15,6 +15,7 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
     const courseId = req.query["courseId"] as string | undefined;
     const userId = req.query["userId"] as string | undefined;
     const status = req.query["status"] as string | undefined;
+    const search = req.query["search"] as string | undefined;
 
     const conditions = [];
     if (req.user!.role === "student") conditions.push(eq(enrollmentsTable.userId, req.user!.userId));
@@ -22,18 +23,33 @@ router.get("/", requireAuth, async (req: AuthenticatedRequest, res) => {
     if (courseId) conditions.push(eq(enrollmentsTable.courseId, courseId));
     if (status) conditions.push(eq(enrollmentsTable.status, status as "active" | "revoked" | "expired"));
 
-    const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(enrollmentsTable)
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
-    const enrollments = await db.select({
+    // For search we need a sub-query join approach: filter after join
+    // We build a joined query and add search condition as ilike on user name or email
+    const baseQuery = db.select({
       id: enrollmentsTable.id, userId: enrollmentsTable.userId, courseId: enrollmentsTable.courseId,
-      courseName: coursesTable.title, userName: usersTable.name,
+      courseName: coursesTable.title, userName: usersTable.name, userEmail: usersTable.email,
       status: enrollmentsTable.status, enrolledAt: enrollmentsTable.enrolledAt, expiresAt: enrollmentsTable.expiresAt,
     }).from(enrollmentsTable)
       .leftJoin(coursesTable, eq(enrollmentsTable.courseId, coursesTable.id))
+      .leftJoin(usersTable, eq(enrollmentsTable.userId, usersTable.id));
+
+    const searchCondition = search
+      ? or(ilike(usersTable.email, `%${search}%`), ilike(usersTable.name, `%${search}%`))
+      : undefined;
+
+    const finalWhere = whereClause && searchCondition
+      ? and(whereClause, searchCondition)
+      : whereClause ?? searchCondition;
+
+    // Count using the same join + where
+    const [countResult] = await db.select({ count: sql<number>`count(*)` })
+      .from(enrollmentsTable)
       .leftJoin(usersTable, eq(enrollmentsTable.userId, usersTable.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .limit(limit).offset(offset);
+      .where(finalWhere);
+
+    const enrollments = await baseQuery.where(finalWhere).limit(limit).offset(offset);
 
     res.json({ data: enrollments, total: Number(countResult?.count ?? 0), page, limit });
   } catch (err) {
