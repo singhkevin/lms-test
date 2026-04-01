@@ -21,6 +21,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function Login() {
   const { login } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -28,10 +29,20 @@ export default function Login() {
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
+    setLoginError(null);
     try {
       await login(data, "student");
-    } catch {
-      // error handled in auth context
+    } catch (err: any) {
+      const msg: string = err?.data?.message ?? err?.message ?? "";
+      if (msg.toLowerCase().includes("wrong portal") || err?.message === "Wrong portal") {
+        // portal mismatch — toast already shown in auth context, no inline error needed
+      } else if (err?.status === 401 || msg.toLowerCase().includes("invalid credentials")) {
+        setLoginError("Invalid email or password. Please try again.");
+      } else if (msg) {
+        setLoginError(msg.replace(/^HTTP \d+ \w+:\s*/i, ""));
+      } else {
+        setLoginError("Something went wrong. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -85,6 +96,12 @@ export default function Login() {
               />
               {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
             </div>
+
+            {loginError && (
+              <div className="flex items-start gap-2 rounded-xl bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+                <span>{loginError}</span>
+              </div>
+            )}
 
             <Button
               type="submit"
