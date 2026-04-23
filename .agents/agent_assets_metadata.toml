@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "TECYjoEjL18J-6PyihilX"
+uri = "file://LMS_FEATURE_DOCUMENT.md"
+type = "text"
+title = "LMS Academy — Full Feature & Architecture Document"
