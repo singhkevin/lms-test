@@ -50,7 +50,7 @@ const frontendPath = path.resolve(__dirname, "../../lms/dist/public");
 
 app.use(express.static(frontendPath));
 
-app.get("*", (req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.path.startsWith("/api")) {
     return next();
   }
