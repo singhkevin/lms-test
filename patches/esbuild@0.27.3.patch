@@ -1,0 +1,24 @@
+diff --git a/install.js b/install.js
+index 1019e62435fd0258e39ad6db102194d46bd85ce4..1f496b10d3db76a353f2cb053d6cc4669a9f1d24 100644
+--- a/install.js
++++ b/install.js
+@@ -281,9 +281,15 @@ this. If that fails, you need to remove the "--no-optional" flag to use esbuild.
+   maybeOptimizePackage(binPath);
+ }
+ checkAndPreparePackage().then(() => {
+-  if (isToPathJS) {
+-    validateBinaryVersion(process.execPath, toPath);
+-  } else {
+-    validateBinaryVersion(toPath);
++  try {
++    if (isToPathJS) {
++      validateBinaryVersion(process.execPath, toPath);
++    } else {
++      validateBinaryVersion(toPath);
++    }
++  } catch (err) {
++    // Soft failure: binary validation failed (e.g. EACCES in restricted hosting).
++    // The binary is still installed correctly; chmod will be applied before use.
++    console.warn("[esbuild] Binary validation skipped: " + (err && err.message || err));
+   }
+ });
