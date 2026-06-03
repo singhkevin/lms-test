@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "build": "npx pnpm install --ignore-scripts; find node_modules -name esbuild -path '*/bin/esbuild' -exec chmod +x {} + 2>/dev/null; npx pnpm -r --if-present run build",
+    "build": "npx pnpm install --ignore-scripts; find node_modules -name esbuild -path '*/bin/esbuild' -exec chmod +x {} + 2>/dev/null; npx pnpm --filter @workspace/lms --filter @workspace/api-server --if-present run build",
     "start": "node artifacts/api-server/dist/index.mjs",
     "typecheck:libs": "npx tsc --build",
     "typecheck": "npx pnpm run typecheck:libs && npx pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
