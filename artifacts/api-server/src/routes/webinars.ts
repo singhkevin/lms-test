@@ -95,7 +95,7 @@ router.post("/", requireAuth, requireRole("owner", "instructor"), async (req: Au
 router.get("/:webinarId", requireAuth, async (req: AuthenticatedRequest, res) => {
   try {
     const [webinar] = await db.select().from(webinarsTable)
-      .where(eq(webinarsTable.id, req.params["webinarId"]!)).limit(1);
+      .where(eq(webinarsTable.id, req.params["webinarId"] as string)).limit(1);
     if (!webinar) { res.status(404).json({ error: "NotFound" }); return; }
 
     const counts = await getRsvpCounts([webinar.id]);
@@ -118,7 +118,7 @@ router.patch("/:webinarId", requireAuth, requireRole("owner", "instructor"), asy
 
     const [updated] = await db.update(webinarsTable)
       .set(updateData)
-      .where(eq(webinarsTable.id, req.params["webinarId"]!))
+      .where(eq(webinarsTable.id, req.params["webinarId"] as string))
       .returning();
     if (!updated) { res.status(404).json({ error: "NotFound" }); return; }
 
@@ -135,7 +135,7 @@ router.patch("/:webinarId", requireAuth, requireRole("owner", "instructor"), asy
 // Delete webinar
 router.delete("/:webinarId", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    await db.delete(webinarsTable).where(eq(webinarsTable.id, req.params["webinarId"]!));
+    await db.delete(webinarsTable).where(eq(webinarsTable.id, req.params["webinarId"] as string));
     res.json({ message: "Webinar deleted" });
   } catch (err) {
     req.log.error({ err }, "Delete webinar error");
@@ -146,7 +146,7 @@ router.delete("/:webinarId", requireAuth, requireRole("owner", "instructor"), as
 // RSVP: student signs up
 router.post("/:webinarId/rsvp", requireAuth, requireRole("student"), async (req: AuthenticatedRequest, res) => {
   try {
-    const webinarId = req.params["webinarId"]!;
+    const webinarId = req.params["webinarId"] as string;
     const userId = req.user!.userId;
 
     const [existing] = await db.select({ id: webinarRsvpsTable.id })
@@ -172,7 +172,7 @@ router.post("/:webinarId/rsvp", requireAuth, requireRole("student"), async (req:
 // RSVP: student cancels
 router.delete("/:webinarId/rsvp", requireAuth, requireRole("student"), async (req: AuthenticatedRequest, res) => {
   try {
-    const webinarId = req.params["webinarId"]!;
+    const webinarId = req.params["webinarId"] as string;
     const userId = req.user!.userId;
 
     await db.delete(webinarRsvpsTable)
@@ -189,7 +189,7 @@ router.delete("/:webinarId/rsvp", requireAuth, requireRole("student"), async (re
 // Get RSVPs for a webinar (admin/instructor only)
 router.get("/:webinarId/rsvps", requireAuth, requireRole("owner", "instructor"), async (req: AuthenticatedRequest, res) => {
   try {
-    const webinarId = req.params["webinarId"]!;
+    const webinarId = req.params["webinarId"] as string;
 
     const rsvps = await db
       .select({
