@@ -143,6 +143,8 @@ overrides:
   rollup>@rollup/rollup-win32-x64-gnu: '-'
   rollup>@rollup/rollup-win32-x64-msvc: '-'
 
+pnpmfileChecksum: sha256-KE9k3l10+rKqiquf7ukBmBa+yoZ0R0kVMn5kH8AJPBc=
+
 importers:
 
   .:
