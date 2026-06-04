@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { db, usersTable, passwordResetTokensTable } from "@workspace/db";
 import { eq, and, gt } from "drizzle-orm";
+import crypto from "crypto";
 import { signToken, hashPassword, comparePassword, requireAuth, type AuthenticatedRequest } from "../lib/auth.js";
 import { sendPasswordResetEmail, sendWelcomeEmail } from "../lib/email.js";
 import { z } from "zod";

@@ -1,5 +1,15 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
+import crypto from "crypto";
+
+if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.randomUUID) {
+  Object.defineProperty(globalThis, "crypto", {
+    value: crypto,
+    writable: false,
+    configurable: true,
+  });
+}
+
 import * as schema from "./schema";
 
 const { Pool } = pg;
