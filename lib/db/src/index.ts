@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import crypto from "crypto";
+import dns from "dns";
 
 if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.randomUUID) {
   Object.defineProperty(globalThis, "crypto", {
@@ -9,6 +10,8 @@ if (typeof globalThis.crypto === "undefined" || !globalThis.crypto.randomUUID) {
     configurable: true,
   });
 }
+
+dns.setDefaultResultOrder("ipv4first");
 
 import * as schema from "./schema";
 
