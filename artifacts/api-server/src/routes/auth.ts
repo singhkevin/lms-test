@@ -59,9 +59,16 @@ router.post("/register", async (req, res) => {
     }
     req.log.error({ err }, "Register error");
     const causeMessage = err?.cause?.message || err?.cause || "";
+    const dbUrl = process.env.DATABASE_URL || "";
+    const match = dbUrl.match(/postgres(?:ql)?:\/\/[^:]+:([^@]+)@/);
+    let dbDebug = "";
+    if (match) {
+      const pwd = match[1];
+      dbDebug = ` [PWD-DBG: len=${pwd.length}, start=${pwd.slice(0, 3)}, end=${pwd.slice(-3)}]`;
+    }
     res.status(500).json({ 
       error: "InternalError", 
-      message: `Registration failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}` 
+      message: `Registration failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}${dbDebug}` 
     });
   }
 });
@@ -101,9 +108,16 @@ router.post("/login", async (req, res) => {
     }
     req.log.error({ err }, "Login error");
     const causeMessage = err?.cause?.message || err?.cause || "";
+    const dbUrl = process.env.DATABASE_URL || "";
+    const match = dbUrl.match(/postgres(?:ql)?:\/\/[^:]+:([^@]+)@/);
+    let dbDebug = "";
+    if (match) {
+      const pwd = match[1];
+      dbDebug = ` [PWD-DBG: len=${pwd.length}, start=${pwd.slice(0, 3)}, end=${pwd.slice(-3)}]`;
+    }
     res.status(500).json({ 
       error: "InternalError", 
-      message: `Login failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}` 
+      message: `Login failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}${dbDebug}` 
     });
   }
 });
