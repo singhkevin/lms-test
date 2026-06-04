@@ -58,7 +58,11 @@ router.post("/register", async (req, res) => {
       return;
     }
     req.log.error({ err }, "Register error");
-    res.status(500).json({ error: "InternalError", message: `Registration failed: ${err?.message || String(err)}` });
+    const causeMessage = err?.cause?.message || err?.cause || "";
+    res.status(500).json({ 
+      error: "InternalError", 
+      message: `Registration failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}` 
+    });
   }
 });
 
@@ -96,7 +100,11 @@ router.post("/login", async (req, res) => {
       return;
     }
     req.log.error({ err }, "Login error");
-    res.status(500).json({ error: "InternalError", message: `Login failed: ${err?.message || String(err)}` });
+    const causeMessage = err?.cause?.message || err?.cause || "";
+    res.status(500).json({ 
+      error: "InternalError", 
+      message: `Login failed: ${err?.message || String(err)}${causeMessage ? ` (Cause: ${causeMessage})` : ""}` 
+    });
   }
 });
 
