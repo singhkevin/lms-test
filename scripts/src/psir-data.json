@@ -1,0 +1,268 @@
+{
+  "title": "PSIR Lecture Plan",
+  "description": "Comprehensive lecture plan for Political Science and International Relations (PSIR) for UPSC preparation.",
+  "modules": [
+    {
+      "title": "Political Theory and Indian Politics",
+      "order": 1,
+      "lessons": [
+        {
+          "title": "Lecture 1: Introduction to PSIR",
+          "order": 1,
+          "durationMinutes": 60
+        },
+        {
+          "title": "Lecture 2: Western Political Thought Thinker 1 - Plato",
+          "order": 2,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 3: Thinker 2 - Aristotle",
+          "order": 3,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 4: Thinker 3 - Machiavelli",
+          "order": 4,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 5: Thinker 4 - Hobbes",
+          "order": 5,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 6: Thinker 5 - John Locke",
+          "order": 6,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 7: Thinker 6 - John Stuart Mill",
+          "order": 7,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 8: Thinker 7 - Karl Marx",
+          "order": 8,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 9: Thinker 8 - Gramsci",
+          "order": 9,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 10: Thinker 9 - Hannah Arendt",
+          "order": 10,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 11: Political Theory: Meaning and Approaches",
+          "order": 11,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 12: Introduction to Theories of State - Liberal",
+          "order": 12,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 13: Neo-Liberal Theory of State",
+          "order": 13,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 14: Marxist Theory of State",
+          "order": 14,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 15: Pluralist Theory of State",
+          "order": 15,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 16: Post-Colonial Theory of State",
+          "order": 16,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 17: Feminist Theory of State",
+          "order": 17,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 18: Justice: Conception of Justice with Special reference to Rawl's Theory of justice and its communitarian critiques",
+          "order": 18,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 19: Equality : Social, Political and Economic; relationship between equality and Freedom; Affirmative Action",
+          "order": 19,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 20: Rights: Meaning and theories; different kinds of rights; Concept of Human Rights",
+          "order": 20,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 21: Democracy: Classical and Contemporary theories; different models of democracy - representative, participatory and deliberative",
+          "order": 21,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 22: Concept of Power: Hegemony, ideology and legitimacy",
+          "order": 22,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 23: Introduction to Political Ideology - Liberalism",
+          "order": 23,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 24: Socialism",
+          "order": 24,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 25: Marxism",
+          "order": 25,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 26: Fascism",
+          "order": 26,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 27: Gandhism",
+          "order": 27,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 28: Feminism",
+          "order": 28,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 29: End of Ideology Debate",
+          "order": 29,
+          "durationMinutes": 60
+        },
+        {
+          "title": "Lecture 30: Multiculturalism - Bhikhu Parekh",
+          "order": 30,
+          "durationMinutes": 60
+        },
+        {
+          "title": "Lecture 31: Introduction to Indian Political Thought - Dharamshastra",
+          "order": 31,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 32: Arthashastra",
+          "order": 32,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 33: Buddhist Traditions",
+          "order": 33,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 34: Sir Syed Ahmed Khan",
+          "order": 34,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 35: Sri Aurobindo",
+          "order": 35,
+          "durationMinutes": 60
+        },
+        {
+          "title": "Lecture 36: M K Gandhi",
+          "order": 36,
+          "durationMinutes": 60
+        },
+        {
+          "title": "Lecture 37: B R Ambedkar",
+          "order": 37,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 38: M. N. Roy",
+          "order": 38,
+          "durationMinutes": 120
+        }
+      ]
+    },
+    {
+      "title": "Indian Government and Politics",
+      "order": 2,
+      "lessons": [
+        {
+          "title": "Lecture 39: Indian Nationalism: a) Political strategies of India's Freedom struggle: Constitutionalism to mass satyagraha, non-cooperation, civil-disobedience; militant and revolutionary movts, peasants and workers movt. b) perspectives on Indian National Movt; Liberal, Socialist and Marxist; Radical Humanist and Dalit",
+          "order": 39,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 40: Making of Indian Constitution: Legacies of the British Rule; different social and political perspectives",
+          "order": 40,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 41: Salient Features of the Indian Constitution: The Preamble, Fundamental Rights and Duties and DPSP; Parliamentary System and Amendment Procedures; Judicial Review and Basic Structure Doctrine",
+          "order": 41,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 42: Principal organs of the Union and State Govt - Executive, Legislature and Judiciary (Supreme Court and High Court)",
+          "order": 42,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 43: Grass Root Democracy: PRI - imp of 73rd and 74th C.A.Act",
+          "order": 43,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 44: Statutory Institutions/ Commissions - ECI, CAG, FC, UPSC, NCSC, NCST, NCW, NHRC, NGT, GST Council, Inter-state council",
+          "order": 44,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 45: Federalism",
+          "order": 45,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 46: Planning and Economic Development",
+          "order": 46,
+          "durationMinutes": 180
+        },
+        {
+          "title": "Lecture 47: Caste, religion and ethnicity in Indian politics",
+          "order": 47,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 48: Party System, Coalition politics, Pressure Groups, trends in electoral behaviour",
+          "order": 48,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 49: Social Movt - civil liberties and human rights movt; women movt; environmental movts",
+          "order": 49,
+          "durationMinutes": 120
+        },
+        {
+          "title": "Lecture 50: Role of opposition",
+          "order": 50,
+          "durationMinutes": 60
+        }
+      ]
+    }
+  ]
+}

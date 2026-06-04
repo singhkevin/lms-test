@@ -8,6 +8,7 @@
     "seed": "tsx ./src/seed.ts",
     "seed-dummy": "tsx ./src/seed-dummy.ts",
     "test-db": "tsx ./src/test-db.ts",
+    "add-psir": "tsx ./src/add-psir-course.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
