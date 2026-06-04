@@ -52,13 +52,13 @@ router.post("/register", async (req, res) => {
         createdAt: user.createdAt,
       },
     });
-  } catch (err) {
+  } catch (err: any) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ error: "ValidationError", message: err.message });
       return;
     }
     req.log.error({ err }, "Register error");
-    res.status(500).json({ error: "InternalError", message: "Registration failed" });
+    res.status(500).json({ error: "InternalError", message: `Registration failed: ${err?.message || String(err)}` });
   }
 });
 
@@ -90,13 +90,13 @@ router.post("/login", async (req, res) => {
         createdAt: user.createdAt,
       },
     });
-  } catch (err) {
+  } catch (err: any) {
     if (err instanceof z.ZodError) {
       res.status(400).json({ error: "ValidationError", message: err.message });
       return;
     }
     req.log.error({ err }, "Login error");
-    res.status(500).json({ error: "InternalError", message: "Login failed" });
+    res.status(500).json({ error: "InternalError", message: `Login failed: ${err?.message || String(err)}` });
   }
 });
 
